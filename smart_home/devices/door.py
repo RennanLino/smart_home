@@ -1,24 +1,19 @@
 import os
 
 from dotenv import load_dotenv
-from transitions import Machine, MachineError
+from transitions import MachineError
 
+from smart_home.devices.base_device import BaseDevice
 from smart_home.states.door_state import DoorState, door_transitions
 
 load_dotenv()
 debug_mode = os.getenv("DEBUG")
 
 
-class Door:
+class Door(BaseDevice):
     def __init__(self, name):
-        self.name = name
+        super().__init__(name, DoorState, DoorState.OPEN, door_transitions)
         self.__invalid_tries = 0
-        self.machine = Machine(
-            model=self,
-            states=DoorState,
-            initial=DoorState.OPEN,
-            transitions=door_transitions,
-        )
 
     @property
     def invalid_tries(self):
@@ -26,7 +21,8 @@ class Door:
 
     def lock(self):
         try:
-            return self._lock()
+            self._lock()
+            self.notify()
         except MachineError as e:
             self.__invalid_tries += 1
             if debug_mode:

@@ -1,19 +1,11 @@
-from transitions import Machine
-
 from smart_home.states import LightState, LightColor, light_transitions
 
 
 class Light:
     def __init__(self, name):
-        self.name = name
+        super().__init__(name, LightState, LightState.OFF, light_transitions)
         self.__brightness = 100
         self.__color = LightColor.NEUTRAL
-        self.__machine = Machine(
-            model=self,
-            states=LightState,
-            initial=LightState.OFF,
-            transitions=light_transitions,
-        )
 
     @property
     def brightness(self):

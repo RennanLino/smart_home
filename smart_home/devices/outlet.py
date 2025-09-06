@@ -1,23 +1,16 @@
 from datetime import datetime, timedelta
 
-from transitions import Machine
-
+from smart_home.devices.base_device import BaseDevice
 from smart_home.states.outlet_state import OutletState, outlet_transitions
 
 
-class Outlet:
+class Outlet(BaseDevice):
     def __init__(self, name, power_w):
-        self.name = name
+        super().__init__(name, OutletState, OutletState.OFF, outlet_transitions)
         self.__power = 0
         self.power = power_w
         self.__turned_on_at: datetime | None = None
         self.__total_time = timedelta(0)
-        self.__machine = Machine(
-            model=self,
-            states=OutletState,
-            initial=OutletState.OFF,
-            transitions=outlet_transitions,
-        )
 
     @property
     def power(self):
