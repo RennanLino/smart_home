@@ -9,25 +9,10 @@ class DoorState(Enum):
     def __str__(self):
         return self.name.title()
 
+
 door_transitions = [
-    {
-        'trigger' : 'unlock',
-        'source'  : DoorState.LOCKED,
-        'dest'    : DoorState.UNLOCKED
-    },
-    {
-        'trigger' : 'lock',
-        'source'  : DoorState.UNLOCKED,
-        'dest'    : DoorState.LOCKED
-    },
-    {
-        'trigger' : 'open',
-        'source'  : DoorState.UNLOCKED,
-        'dest'    : DoorState.OPEN
-    },
-    {
-        'trigger' : 'close',
-        'source'  : DoorState.OPEN,
-        'dest'    : DoorState.UNLOCKED
-    }
+    {"trigger": "unlock", "source": DoorState.LOCKED, "dest": DoorState.UNLOCKED},
+    {"trigger": "_lock", "source": DoorState.UNLOCKED, "dest": DoorState.LOCKED},
+    {"trigger": "open", "source": DoorState.UNLOCKED, "dest": DoorState.OPEN},
+    {"trigger": "close", "source": DoorState.OPEN, "dest": DoorState.UNLOCKED},
 ]
