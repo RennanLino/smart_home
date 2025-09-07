@@ -3,7 +3,7 @@ from transitions import Machine, MachineError, Event
 
 class LoggingEvent(Event):
     def trigger(self, model, *args, **kwargs):
-        result = None
+        result = False
         source_state = str(model.state).lower()
         destiny_state = list(self.transitions.values())[0][0].dest.lower()
         try:

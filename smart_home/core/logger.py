@@ -4,8 +4,8 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import List
 
-transitions_logger = logging.getLogger("transitions.core")
-transitions_logger.setLevel(logging.CRITICAL)
+# transitions_logger = logging.getLogger("transitions.core")
+# transitions_logger.setLevel(logging.CRITICAL)
 
 
 class LogLevel(Enum):
