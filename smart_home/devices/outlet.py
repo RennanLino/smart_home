@@ -12,6 +12,12 @@ class Outlet(BaseDevice):
         self.__turned_on_at: datetime | None = None
         self.__total_time = timedelta(0)
 
+    def __str__(self):
+        return (
+            f"Outlet '{self.name}' [{self.state}] Power: {self.power}, "
+            f"Total time on: {self.__total_time}, Total consumption: {self.consumption:.2f} Wh"
+        )
+
     @property
     def power(self):
         return self.__power
@@ -41,8 +47,9 @@ class Outlet(BaseDevice):
         self.__total_time += datetime.now() - self.__turned_on_at
         self.__turned_on_at = None
 
-    def __str__(self):
-        return (
-            f"Outlet '{self.name}' [{self.state}] Power: {self.power}, "
-            f"Total time on: {self.__total_time}, Total consumption: {self.consumption:.2f} Wh"
-        )
+    def to_dict(self):
+        result = super().to_dict()
+        result["atributes"] = {
+            "power_w": self.power,
+        }
+        return result

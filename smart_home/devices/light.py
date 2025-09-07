@@ -1,11 +1,15 @@
+from smart_home.devices.base_device import BaseDevice
 from smart_home.states import LightState, LightColor, light_transitions
 
 
-class Light:
+class Light(BaseDevice):
     def __init__(self, name):
         super().__init__(name, LightState, LightState.OFF, light_transitions)
         self.__brightness = 100
         self.__color = LightColor.NEUTRAL
+
+    def __str__(self):
+        return f"Light '{self.name}' [{self.state}] Brightness: {self.brightness}, Color: {self.color}"
 
     @property
     def brightness(self):
@@ -26,5 +30,10 @@ class Light:
         self._set_color()
         self.__color = color
 
-    def __str__(self):
-        return f"Light '{self.name}' [{self.state}] Brightness: {self.brightness}, Color: {self.color}"
+    def to_dict(self):
+        result = super().to_dict()
+        result["atributes"] = {
+            "brightness": self.brightness,
+            "color": self.color,
+        }
+        return result

@@ -14,6 +14,9 @@ class Door(BaseDevice):
         super().__init__(name, DoorState, DoorState.OPEN, door_transitions)
         self.__invalid_tries = 0
 
+    def __str__(self):
+        return f"Door '{self.name}' [{self.state}] Invalid lock tries: {self.invalid_tries}"
+
     @property
     def invalid_tries(self):
         return self.__invalid_tries
@@ -22,6 +25,3 @@ class Door(BaseDevice):
         result = self._lock()
         if not result:
             self.__invalid_tries += 1
-
-    def __str__(self):
-        return f"Door '{self.name}' [{self.state}] Invalid lock tries: {self.invalid_tries}"
