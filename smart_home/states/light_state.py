@@ -6,7 +6,7 @@ class LightState(Enum):
     OFF = auto()
 
     def __str__(self):
-        return self.name.title()
+        return self.name.lower()
 
 
 class LightColor(Enum):
@@ -15,7 +15,7 @@ class LightColor(Enum):
     NEUTRAL = auto()
 
     def __str__(self):
-        return self.name.title()
+        return self.name.lower()
 
 
 light_transitions = [

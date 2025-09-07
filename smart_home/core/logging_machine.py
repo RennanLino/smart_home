@@ -1,31 +1,20 @@
 from transitions import Machine, MachineError, Event
 
-from smart_home.core.logger import LogLevel
-
 
 class LoggingEvent(Event):
     def trigger(self, model, *args, **kwargs):
+        result = None
+        source_state = str(model.state).lower()
+        destiny_state = list(self.transitions.values())[0][0].dest.lower()
         try:
             result = super().trigger(model, *args, **kwargs)
-
-            if result:
-                model.notify(
-                    f"[{type(model).__name__} - {model.name}] Transition successful, now in '{model.state}'",
-                    LogLevel.INFO,
-                )
-            else:
-                model.notify(
-                    f"[{type(model).__name__} - {model.name}] No transition executed for trigger '{self.name}'",
-                    LogLevel.WARNING,
-                )
-
             return result
         except MachineError:
-            model.notify(
-                f"[{type(model).__name__} - {model.name}] Invalid trigger '{self.name}' from state '{model.state}'",
-                LogLevel.ERROR,
-            )
             return False
+        finally:
+            event_name = self.name[1:] if self.name.startswith("_") else self.name
+            message = [model.name, event_name, source_state, destiny_state, result]
+            model.logger.log_event_to_csv(message)
 
 
 class LoggingMachine(Machine):

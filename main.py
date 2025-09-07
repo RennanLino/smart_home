@@ -1,6 +1,10 @@
+import time
+
+from smart_home.devices import Outlet
+
 if __name__ == "__main__":
     # # Door test
-    # d = Door("Frente")
+    # d = Door("Front Door")
     # print(d)
     # d.lock()
     # print(d.invalid_tries)
@@ -10,7 +14,7 @@ if __name__ == "__main__":
     # print(d.invalid_tries)
 
     # # Light test
-    # l = Light("Quarto")
+    # l = Light("Bedroom Light")
     # print(l)
     # l.set_brightness(90)
     # l.set_color(LightColor.COLD)
@@ -23,12 +27,12 @@ if __name__ == "__main__":
     # print(l)
     # print()
 
-    # # Outlet test
-    # o = Outlet("Quarto", 100)
-    # print(o)
-    # o.turn_on()
-    # print(o)
-    # time.sleep(5)
-    # o.turn_off()
-    # print(o)
+    # Outlet test
+    o = Outlet("Bedroom Outlet", 100)
+    print(o)
+    o.turn_on()
+    print(o)
+    time.sleep(5)
+    o.turn_off()
+    print(o)
     pass

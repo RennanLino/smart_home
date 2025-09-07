@@ -1,25 +1,14 @@
-from smart_home.core.logger import Logger, LogLevel
+from smart_home.core.logger import Logger
 from smart_home.core.logging_machine import LoggingMachine
 
 
 class BaseDevice:
     def __init__(self, name: str, states, initial_state, transitions):
         self.name = name
-        self.observers = [Logger()]
+        self.logger = Logger()
         self.machine = LoggingMachine(
             model=self,
             states=states,
             initial=initial_state,
             transitions=transitions,
         )
-
-    def register(self, observer):
-        self.observers.append(observer)
-
-    def unregister(self, observer):
-        self.observers.remove(observer)
-
-    def notify(self, data, log_level: LogLevel = None):
-        for observer in self.observers:
-            if isinstance(observer, Logger):
-                observer.update(data, log_level)

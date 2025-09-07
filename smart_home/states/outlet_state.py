@@ -6,7 +6,7 @@ class OutletState(Enum):
     OFF = auto()
 
     def __str__(self):
-        return self.name.title()
+        return self.name.lower()
 
 
 outlet_transitions = [
