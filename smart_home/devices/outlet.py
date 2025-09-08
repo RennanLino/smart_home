@@ -54,3 +54,16 @@ class Outlet(BaseDevice):
             "power_w": self.power_w,
         }
         return result
+
+    @classmethod
+    def get_command_kwargs(cls, command_name):
+        result = {}
+        match command_name:
+            case "__init__":
+                result = {
+                    "power_w": {
+                        "available_values": range(2001),
+                        "message": "Digite a potência (Entre 0 e 2000):\n> "
+                    }
+                }
+        return result

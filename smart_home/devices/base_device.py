@@ -59,5 +59,6 @@ class BaseDevice(ABC):
                                self.machine.events.items()))
         return commands
 
-    def get_command_kwargs(self, command_name):
-        pass
+    @classmethod
+    def get_command_kwargs(cls, command_name):
+        return {}

@@ -57,13 +57,14 @@ class Light(BaseDevice):
         }
         return result
 
-    def get_command_kwargs(self, command_name):
+    @classmethod
+    def get_command_kwargs(cls, command_name):
         result = {}
         match command_name:
             case "set_brightness":
                 result = {
                     "brightness": {
-                        "available_values": range(100),
+                        "available_values": range(101),
                         "message": "Digite o brilho (entre 0 e 100):\n> "
                     }
                 }
