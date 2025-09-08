@@ -10,13 +10,8 @@ debug_mode = os.getenv("DEBUG")
 
 
 class Door(BaseDevice):
-    states = DoorState
-    initial_state = DoorState.OPEN
-    transitions = door_transitions
-
-    def __init__(self, name, initial_state=None):
-        initial_state = initial_state if initial_state else self.initial_state
-        super().__init__(name, self.states, initial_state, self.transitions)
+    def __init__(self, name, initial_state=DoorState.OPEN):
+        super().__init__(name, DoorState, initial_state, door_transitions)
         self.__invalid_tries = 0
 
     def __str__(self):

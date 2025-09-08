@@ -3,15 +3,14 @@ from smart_home.states import LightState, LightColor, light_transitions
 
 
 class Light(BaseDevice):
-    states = LightState
-    initial_state = LightState.OFF
-    transitions = light_transitions
-
     def __init__(
-        self, name, brightness=100, color=LightColor.NEUTRAL, initial_state=None
+        self,
+        name,
+        brightness=100,
+        color=LightColor.NEUTRAL,
+        initial_state=LightState.OFF,
     ):
-        initial_state = initial_state if initial_state else self.initial_state
-        super().__init__(name, self.states, initial_state, self.transitions)
+        super().__init__(name, LightState, initial_state, light_transitions)
         self.brightness = brightness
         self.__color = color
 

@@ -5,13 +5,8 @@ from smart_home.states.outlet_state import OutletState, outlet_transitions
 
 
 class Outlet(BaseDevice):
-    states = OutletState
-    initial_state = OutletState.OFF
-    transitions = outlet_transitions
-
-    def __init__(self, name, power_w, initial_state=None):
-        initial_state = initial_state if initial_state else self.initial_state
-        super().__init__(name, self.states, initial_state, self.transitions)
+    def __init__(self, name, power_w, initial_state=OutletState.OFF):
+        super().__init__(name, OutletState, initial_state, outlet_transitions)
         self.__power_w = 0
         self.power_w = power_w
         self.__turned_on_at: datetime | None = None
