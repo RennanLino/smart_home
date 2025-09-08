@@ -6,3 +6,6 @@
 [2025-09-07 19:31:42] - root - WARNING - "Can't trigger event set_brightness from state OFF!"
 [2025-09-07 19:31:42] - root - WARNING - "Can't trigger event _set_color from state OFF!"
 [2025-09-07 19:44:39] - root - ERROR - Brightness must be between 0 and 100
+[2025-09-08 08:40:31] - root - WARNING - "Can't trigger event lock from state OPEN!"
+[2025-09-08 08:41:52] - root - WARNING - "Can't trigger event lock from state OPEN!"
+[2025-09-08 09:48:10] - root - WARNING - "Can't trigger event turn_on from state off!"

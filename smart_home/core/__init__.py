@@ -6,3 +6,4 @@ from .command import Command
 from .routine import Routine
 from .house import House
 from .logging_machine import LoggingMachine, LoggingEvent
+from .cli import main
