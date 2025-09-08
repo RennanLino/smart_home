@@ -35,6 +35,7 @@ class Light(BaseDevice):
     def color(self):
         return self.__color
 
+    # Used after set_color transition
     def _set_color(self, color: LightColor):
         self.__color = color
 

@@ -1,0 +1,18 @@
+{
+  "hub": {
+    "name": "House",
+    "version": "1.0"
+  },
+  "devices": [
+    {
+      "name": "Bedroom Light",
+      "type": "Light",
+      "state": "off",
+      "atributes": {
+        "brightness": 90,
+        "color": "cold"
+      }
+    }
+  ],
+  "routines": {}
+}

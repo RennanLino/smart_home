@@ -22,7 +22,6 @@ if __name__ == "__main__":
     # print(l)
     # l.turn_off()
     # print(l)
-    house.load_config()
 
     # # Outlet test
     # o = Outlet("Bedroom Outlet", 100)
