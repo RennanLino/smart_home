@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
 from enum import Enum, auto
-from typing import List
+from typing import Any
 
-from smart_home.core.persistence import Persistence
+from smart_home.core.singleton import Singleton
 
 transitions_logger = logging.getLogger("transitions.core")
 transitions_logger.setLevel(logging.CRITICAL)
@@ -19,56 +19,41 @@ class LogLevel(Enum):
         return self.name.lower()
 
 
-class Logger:
+class Logger(Singleton):
     _instance = None
     __event_file_path = "data/events.csv"
-    __event_headers = [
-        "timestamp",
-        "device_name",
-        "event",
-        "source_state",
-        "destiny_state",
-        "success",
-    ]
     __report_file_path = "data/reports.csv"
-    __report_headers = [
-        "device_name",
-        "total_wh",
-        "start_time",
-        "end_time",
-    ]
 
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialize_logger()
-        return cls._instance
+    def __init__(self):
+        if not hasattr(self, "initialized"):
+            self._instance._initialize_logger()
+            self.initialized = True
 
     def _initialize_logger(self):
         logging.basicConfig(
             level=logging.INFO,
-            format="%[(asctime)s] - %(name)s - %(levelname)s - %(message)s",
+            format="[%(asctime)s] - %(name)s - %(levelname)s - %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             handlers=[
                 logging.FileHandler("data/system.log"),
             ],
         )
-        self.logger = logging.getLogger()
+        self.__logger = logging.getLogger()
 
-    def log_event_to_csv(self, message: List[str]):
+    def log_event_to_csv(self, message: dict[str, Any]):
+        from smart_home.core import Persistence
+
         timestamp = datetime.now().isoformat()
-        message = [timestamp, *message]
-        try:
-            Persistence.write_to_csv(
-                self.__event_file_path, self.__event_headers, message
-            )
-        except Exception as e:
-            self.logger.error(f"Error writing to CSV: {e}")
+        message = {"timestamp": timestamp, **message}
+        Persistence.write_to_csv(self.__event_file_path, message)
 
-    def log_report_to_csv(self, message: List[str]):
-        try:
-            Persistence.write_to_csv(
-                self.__report_file_path, self.__report_headers, message
-            )
-        except Exception as e:
-            self.logger.error(f"Error writing to CSV: {e}")
+    def log_report_to_csv(self, message: dict[str, Any]):
+        from smart_home.core import Persistence
+
+        Persistence.write_to_csv(self.__report_file_path, message)
+
+    def log(self, message: str, level: LogLevel = LogLevel.INFO):
+        log_method = getattr(self.__logger, str(level), None)
+        if not log_method:
+            raise Exception(f"Log level {level} not supported")
+        log_method(message)

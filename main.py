@@ -1,4 +1,7 @@
+from smart_home.core import House
+
 if __name__ == "__main__":
+    house = House()
     # # Door test
     # d = Door("Front Door")
     # print(d)
@@ -12,8 +15,6 @@ if __name__ == "__main__":
     # # Light test
     # l = Light("Bedroom Light")
     # print(l)
-    # l.set_brightness(90)
-    # l.set_color(LightColor.COLD)
     # l.turn_on()
     # print(l)
     # l.set_brightness(90)
@@ -21,10 +22,11 @@ if __name__ == "__main__":
     # print(l)
     # l.turn_off()
     # print(l)
-    # print()
+    house.load_config()
 
     # # Outlet test
     # o = Outlet("Bedroom Outlet", 100)
+    # o.turn_off()
     # print(o)
     # o.turn_on()
     # print(o)

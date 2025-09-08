@@ -1,7 +1,9 @@
-from enum import Enum, auto
+from enum import auto
+
+from smart_home.states.base_enum import BaseEnum
 
 
-class LightState(Enum):
+class LightState(BaseEnum):
     ON = auto()
     OFF = auto()
 
@@ -9,7 +11,7 @@ class LightState(Enum):
         return self.name.lower()
 
 
-class LightColor(Enum):
+class LightColor(BaseEnum):
     COLD = auto()
     WARM = auto()
     NEUTRAL = auto()
@@ -21,6 +23,16 @@ class LightColor(Enum):
 light_transitions = [
     {"trigger": "turn_on", "source": LightState.OFF, "dest": LightState.ON},
     {"trigger": "turn_off", "source": LightState.ON, "dest": LightState.OFF},
-    {"trigger": "_set_brightness", "source": LightState.ON, "dest": LightState.ON},
-    {"trigger": "_set_color", "source": LightState.ON, "dest": LightState.ON},
+    {
+        "trigger": "set_brightness",
+        "source": LightState.ON,
+        "dest": LightState.ON,
+        "after": "_set_brightness",
+    },
+    {
+        "trigger": "set_color",
+        "source": LightState.ON,
+        "dest": LightState.ON,
+        "after": "_set_color",
+    },
 ]

@@ -1,7 +1,9 @@
-from enum import Enum, auto
+from enum import auto
+
+from smart_home.states.base_enum import BaseEnum
 
 
-class DoorState(Enum):
+class DoorState(BaseEnum):
     LOCKED = auto()
     UNLOCKED = auto()
     OPEN = auto()

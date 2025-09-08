@@ -3,10 +3,17 @@ from smart_home.states import LightState, LightColor, light_transitions
 
 
 class Light(BaseDevice):
-    def __init__(self, name):
-        super().__init__(name, LightState, LightState.OFF, light_transitions)
-        self.__brightness = 100
-        self.__color = LightColor.NEUTRAL
+    states = LightState
+    initial_state = LightState.OFF
+    transitions = light_transitions
+
+    def __init__(
+        self, name, brightness=100, color=LightColor.NEUTRAL, initial_state=None
+    ):
+        initial_state = initial_state if initial_state else self.initial_state
+        super().__init__(name, self.states, initial_state, self.transitions)
+        self.brightness = brightness
+        self.__color = color
 
     def __str__(self):
         return f"Light '{self.name}' [{self.state}] Brightness: {self.brightness}, Color: {self.color}"
@@ -15,25 +22,27 @@ class Light(BaseDevice):
     def brightness(self):
         return self.__brightness
 
-    def set_brightness(self, brightness: int):
-        if 0 > brightness > 100:
+    @brightness.setter
+    def brightness(self, brightness):
+        if 0 > brightness or brightness > 100:
             raise ValueError("Brightness must be between 0 and 100")
-
-        self._set_brightness()
         self.__brightness = brightness
+
+    # Used after set_brightness transition
+    def _set_brightness(self, brightness):
+        self.brightness = brightness
 
     @property
     def color(self):
         return self.__color
 
-    def set_color(self, color: LightColor):
-        self._set_color()
+    def _set_color(self, color: LightColor):
         self.__color = color
 
     def to_dict(self):
         result = super().to_dict()
         result["atributes"] = {
             "brightness": self.brightness,
-            "color": self.color,
+            "color": str(self.color),
         }
         return result

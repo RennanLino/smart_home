@@ -1,7 +1,9 @@
-from enum import Enum, auto
+from enum import auto
+
+from smart_home.states.base_enum import BaseEnum
 
 
-class OutletState(Enum):
+class OutletState(BaseEnum):
     ON = auto()
     OFF = auto()
 
@@ -10,6 +12,6 @@ class OutletState(Enum):
 
 
 outlet_transitions = [
-    {"trigger": "_turn_on", "source": OutletState.OFF, "dest": OutletState.ON},
-    {"trigger": "_turn_off", "source": OutletState.ON, "dest": OutletState.OFF},
+    {"trigger": "turn_on", "source": OutletState.OFF, "dest": OutletState.ON},
+    {"trigger": "turn_off", "source": OutletState.ON, "dest": OutletState.OFF},
 ]
