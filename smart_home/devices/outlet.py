@@ -5,8 +5,11 @@ from smart_home.states.outlet_state import OutletState, outlet_transitions
 
 
 class Outlet(BaseDevice):
+    states = OutletState
+    transitions = outlet_transitions
+
     def __init__(self, name, power_w, initial_state=OutletState.OFF):
-        super().__init__(name, OutletState, initial_state, outlet_transitions)
+        super().__init__(name, initial_state)
         self.__power_w = 0
         self.power_w = power_w
         self.__turned_on_at: datetime | None = None
@@ -50,4 +53,17 @@ class Outlet(BaseDevice):
         result["atributes"] = {
             "power_w": self.power_w,
         }
+        return result
+
+    @classmethod
+    def get_command_kwargs(cls, command_name):
+        result = {}
+        match command_name:
+            case "__init__":
+                result = {
+                    "power_w": {
+                        "available_values": range(2001),
+                        "message": "Digite a potência (Entre 0 e 2000):\n> "
+                    }
+                }
         return result

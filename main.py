@@ -1,7 +1,8 @@
-from smart_home.core import House
+from smart_home.core import House, main
+from smart_home.devices import Door, Light
 
 if __name__ == "__main__":
-    house = House()
+    # house = House()
     # # Door test
     # d = Door("Front Door")
     # print(d)
@@ -33,4 +34,6 @@ if __name__ == "__main__":
     # time.sleep(5)
     # o.turn_off()
     # print(o)
+
+    main()
     pass

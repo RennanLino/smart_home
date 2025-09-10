@@ -31,8 +31,10 @@ class LoggingEvent(Event):
             result = super().trigger(model, *args, **kwargs)
         except MachineError as e:
             self.logger.log(str(e), LogLevel.WARNING)
+            raise
         except Exception as e:
             self.logger.log(str(e), LogLevel.ERROR)
+            raise
         finally:
             result = EventResult(
                 model.name, event_name, source_state, destiny_state, result

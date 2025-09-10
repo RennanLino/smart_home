@@ -2,18 +2,21 @@ import sys
 from abc import ABC
 
 from smart_home.core import House, LoggingMachine
+from smart_home.states import BaseEnum, EnumDescriptor
 
 
 class BaseDevice(ABC):
+    states: BaseEnum
+    transitions: dict
     house = House()
 
-    def __init__(self, name: str, states, initial_state, transitions):
+    def __init__(self, name: str, initial_state):
         self.name = name
         self.machine = LoggingMachine(
             model=self,
-            states=states,
+            states=self.states,
             initial=initial_state,
-            transitions=transitions,
+            transitions=self.transitions,
         )
         self.house.add_device(self)
 
@@ -45,6 +48,17 @@ class BaseDevice(ABC):
         device_obj = device_class(
             device_dict["name"],
             **device_dict["atributes"],
-            initial_state=device_dict["state"],
+            initial_state=device_dict["state"]
+            #initial_state=device_class.states.from_str(device_dict["state"])
         )
         return device_obj
+
+    def get_available_commands(self):
+        commands = dict(filter(lambda kv: not kv[0].startswith("to_")
+                                          and str(self.state).upper() in kv[1].transitions,
+                               self.machine.events.items()))
+        return commands
+
+    @classmethod
+    def get_command_kwargs(cls, command_name):
+        return {}
