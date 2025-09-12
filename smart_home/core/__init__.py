@@ -1,4 +1,4 @@
-from .singleton import Singleton
+from smart_home.core.base.singleton import Singleton
 from .logger import Logger, LogLevel
 from .observers import ConsoleObserver
 from .persistence import Persistence

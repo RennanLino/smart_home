@@ -1,6 +1,6 @@
 from enum import auto
 
-from smart_home.states.base_enum import BaseEnum
+from smart_home.states import BaseEnum
 
 
 class DoorState(BaseEnum):

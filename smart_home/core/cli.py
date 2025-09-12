@@ -41,7 +41,9 @@ def main():
                 "9. Remover dispositivo\n"
                 "10. Sair\n"
                 "> ")
-        option = get_option(menu, range(11))
+
+        available_options = list(range(11))
+        option = get_option(menu, available_options)
 
 
         match option:
@@ -60,7 +62,8 @@ def main():
                 commands_menu = [f"{idx}. {name}" for idx, name in enumerate(command_names)]
                 commands_menu = "Escolha o comando: \n" + "\n".join(commands_menu) + "\n> "
 
-                command_option = int(get_option(commands_menu, range(len(commands))))
+                available_commands = list(range(len(commands)))
+                command_option = int(get_option(commands_menu, available_commands))
                 command_name = command_names[command_option]
                 command_method = getattr(device, command_name)
 
@@ -75,7 +78,7 @@ def main():
 
             # case 4:
             # case 5:
-            #case 6:
+            # case 6:
             case 7:
                 house.save_config()
                 print("Configurações salvas com sucesso!")
@@ -83,7 +86,8 @@ def main():
                 device_classes = BaseDevice.__subclasses__()
                 device_class_menu =  [f"{idx}. {type.__name__}" for idx, type in enumerate(device_classes)]
                 device_class_menu = "Escolha o tipo de dispositivo: \n" + "\n".join(device_class_menu) + "\n> "
-                device_class_option = int(get_option(device_class_menu, range(len(device_classes))))
+                available_devices = list(range(len(device_classes)))
+                device_class_option = int(get_option(device_class_menu, available_devices))
                 device_class = device_classes[device_class_option]
 
                 device_name = ""

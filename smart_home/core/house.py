@@ -1,28 +1,21 @@
 from smart_home.core import Persistence, ConsoleObserver, Routine
-from smart_home.core.singleton import Singleton
+from smart_home.core.base import Subject
+from smart_home.core.base.singleton import Singleton
 from smart_home.core.logging_machine import EventResult
 
 
-class House(Singleton):
+class House(metaclass=Singleton, Subject):
     _instance = None
     __config_path = "data/config.json"
 
     def __init__(self):
+        super().__init__()
         self.name = "House"
         self.version = "1.0"
         self.__devices = []
-        self.__routines = []
+        self.__routines = {}
         self.__observers = [ConsoleObserver()]
 
-    def register_observer(self, observer):
-        self.__observers.append(observer)
-
-    def unregister_observer(self, observer):
-        self.__observers.remove(observer)
-
-    def notify_observers(self, data):
-        for observer in self.__observers:
-            observer.update(data)
 
     @property
     def devices(self):
@@ -31,23 +24,23 @@ class House(Singleton):
     def add_device(self, device: "BaseDevice"):
         self.__devices.append(device)
         message = f"[EVENT] Device Added: {type(device).__name__} - {device.name}"
-        self.notify_observers(message)
+        self.notify(message)
 
     def remove_device(self, device: "BaseDevice"):
         self.__devices.remove(device)
         message = f"[EVENT] Device Removed: {type(device).__name__} - {device.name}"
-        self.notify_observers(message)
+        self.notify(message)
 
     def run_routine(self, routine_name: str):
-        if getattr(self.routines, routine_name) is None:
+        if getattr(self.__routines, routine_name) is None:
             raise Exception(f"Routine {routine_name} not found")
-        self.routines[routine_name].run_routine()
+        self.__routines[routine_name].run_routine()
         message = f"[EVENT] Routine Executed: {routine_name}"
-        self.notify_observers(message)
+        self.notify(message)
 
     def notify_transition_event(self, event_result: EventResult):
         message = f"[EVENT] Executed Command: {vars(event_result)}"
-        self.notify_observers(message)
+        self.notify(message)
 
     def save_config(self):
         Persistence.write_to_json(self.__config_path, self.to_dict())

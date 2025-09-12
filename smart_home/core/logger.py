@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import Any
 
-from smart_home.core.singleton import Singleton
+from smart_home.core.base.singleton import Singleton
 
 transitions_logger = logging.getLogger("transitions.core")
 transitions_logger.setLevel(logging.CRITICAL)
@@ -19,15 +19,11 @@ class LogLevel(Enum):
         return self.name.lower()
 
 
-class Logger(Singleton):
+class Logger(metaclass=Singleton):
     _instance = None
     __event_file_path = "data/events.csv"
     __report_file_path = "data/reports.csv"
 
-    def __init__(self):
-        if not hasattr(self, "initialized"):
-            self._instance._initialize_logger()
-            self.initialized = True
 
     def _initialize_logger(self):
         logging.basicConfig(
