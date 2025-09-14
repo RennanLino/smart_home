@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any
+from typing import Any, List
 
 from smart_home.core import Persistence
 from smart_home.core.base.singleton import Singleton
@@ -22,14 +22,9 @@ class LogLevel(Enum):
 
 class SmartHouseLogger(logging.Logger, metaclass=Singleton):
     _instance = None
-    __event_file_path = "data/events.csv"
-    __report_file_path = "data/reports.csv"
 
     def __init__(self):
         super().__init__("smart_house")
-        self._initialize_logger()
-
-    def _initialize_logger(self):
         logging.basicConfig(
             level=logging.INFO,
             format="[%(asctime)s] - %(name)s - %(levelname)s - %(message)s",
@@ -39,12 +34,16 @@ class SmartHouseLogger(logging.Logger, metaclass=Singleton):
             ],
         )
 
-    def log_event_to_csv(self, message: dict[str, Any]):
+    @staticmethod
+    def log_event_to_csv(event_file_path: str,  message: dict[str, Any]):
         from smart_home.core import Persistence
 
         timestamp = datetime.now().isoformat()
         message = {"timestamp": timestamp, **message}
-        Persistence.write_to_csv(self.__event_file_path, message)
+        Persistence.write_to_csv( event_file_path, message)
 
-    def log_report_to_csv(self, message: dict[str, Any]):
-        Persistence.write_to_csv(self.__report_file_path, message)
+    @staticmethod
+    def log_report_to_csv(report_file_path: str, messages: List[dict[str, Any]]):
+        Persistence.clear_csv(report_file_path)
+        for message in messages:
+            Persistence.write_to_csv(report_file_path, message)

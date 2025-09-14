@@ -19,17 +19,19 @@ def handle_exception(cls, func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except MachineError as e:
-            print("Transição de estado inválido: ", e)
-            logger.warning(e)
         except NoRegisteredDevice as e:
             print("Não há nenhum dispositivo cadastrado.")
         except NoRegisteredRoutine as e:
             print("Não há nenhuma rotina cadastrado.")
+        except NoAvailableInfoToReport as e:
+            print("Não há nenhuma informação disponível para gerar este tipo de relatório.")
         except ValueError as e:
             print(e)
             logger.warning(e)
             return func(*args, **kwargs)
+        except MachineError as e:
+            print("Transição de estado inválido: ", e)
+            logger.warning(e)
         except ConfigBadFormat as e:
             print("Formato do arquivo de configuração incorreto. Iniciando nova SmartHome...\n")
             logger.error(e)
@@ -57,4 +59,9 @@ class NoRegisteredDevice(Exception):
 class NoRegisteredRoutine(Exception):
     def __init__(self):
         self.message = "No registered routine found."
+        super().__init__(self.message)
+
+class NoAvailableInfoToReport(Exception):
+    def __init__(self, report_name):
+        self.message = f"No available info found to report on {report_name}."
         super().__init__(self.message)

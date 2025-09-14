@@ -20,7 +20,8 @@ def main():
                 cli.change_device_attribute()
             case 5:
                 cli.run_routine()
-            # case 6:
+            case 6:
+                cli.generate_report()
             case 7:
                 cli.save_house_config()
             case 8:

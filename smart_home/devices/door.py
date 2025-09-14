@@ -1,9 +1,11 @@
 from smart_home.devices.base_device import BaseDevice
+from smart_home.states import EnumDescriptor
 from smart_home.states.door_state import DoorState, door_transitions
 
 
 class Door(BaseDevice):
     name_pt = "Porta"
+    state = EnumDescriptor(DoorState)
     states = DoorState
     transitions = door_transitions
 

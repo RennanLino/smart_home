@@ -16,6 +16,19 @@ class Persistence:
             writer.writerow(list(message.values()))
 
     @classmethod
+    def clear_csv(cls, filepath: str):
+        with open(filepath, "w", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+
+    @classmethod
+    def load_from_csv(cls, filepath: str):
+        result = []
+        with open(filepath, "r", encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            result = [row for row in reader]
+        return result
+
+    @classmethod
     def write_to_json(cls, file_path: str, obj: dict):
         with open(file_path, "w", newline="") as jsonfile:
             json.dump(obj, jsonfile, indent=4)

@@ -1,20 +1,22 @@
 from datetime import datetime, timedelta
 
 from smart_home.devices.base_device import BaseDevice
+from smart_home.states import EnumDescriptor
 from smart_home.states.outlet_state import OutletState, outlet_transitions
 
 
 class Outlet(BaseDevice):
     name_pt = "Tomada"
+    state = EnumDescriptor(OutletState)
     states = OutletState
     transitions = outlet_transitions
 
-    def __init__(self, name, power_w, initial_state=OutletState.OFF):
+    def __init__(self, name, power_w, total_time = 0, initial_state=OutletState.OFF):
         super().__init__(name, initial_state)
         self.__power_w = 0
         self.power_w = power_w
-        self.__turned_on_at: datetime | None = None
-        self.__total_time = timedelta(0)
+        self.__turned_on_at: datetime | None = datetime.now() if initial_state == OutletState.ON else None
+        self.__total_time = timedelta(seconds=total_time)
 
     def __str__(self):
         return (
@@ -53,6 +55,7 @@ class Outlet(BaseDevice):
         result = super().to_dict()
         result["atributes"] = {
             "power_w": self.power_w,
+            "total_time": self.__total_time.total_seconds(),
         }
         return result
 

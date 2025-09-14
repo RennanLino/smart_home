@@ -1,3 +1,5 @@
+from datetime import timedelta, datetime
+
 from smart_home.devices.base_device import BaseDevice
 from smart_home.states import LightState, LightColor, light_transitions
 from smart_home.states.base_enum import EnumDescriptor
@@ -5,21 +7,24 @@ from smart_home.states.base_enum import EnumDescriptor
 
 class Light(BaseDevice):
     name_pt = "Luz"
-    states = LightState
     state = EnumDescriptor(LightState)
-    __color = EnumDescriptor(LightColor)
+    states = LightState
     transitions = light_transitions
+    __color = EnumDescriptor(LightColor)
 
     def __init__(
         self,
         name,
         brightness=100,
         color=LightColor.NEUTRAL,
+        total_time=0,
         initial_state=LightState.OFF,
     ):
         super().__init__(name, initial_state)
         self.brightness = brightness
         self.color = color
+        self.__turned_on_at: datetime | None = datetime.now() if initial_state == LightState.ON else None
+        self.__total_time = timedelta(seconds=total_time)
 
     def __str__(self):
         return f"({self.name_pt}) '{self.name}' [{self.state}] Brilho: {self.brightness}, Cor: {self.color}"
@@ -50,11 +55,19 @@ class Light(BaseDevice):
     def _set_color(self, color: LightColor):
         self.color = color
 
+    def on_enter_ON(self):
+        self.__turned_on_at = datetime.now()
+
+    def on_enter_OFF(self):
+        self.__total_time += datetime.now() - self.__turned_on_at
+        self.__turned_on_at = None
+
     def to_dict(self):
         result = super().to_dict()
         result["atributes"] = {
             "brightness": self.brightness,
             "color": str(self.color),
+            "total_time": self.__total_time.total_seconds(),
         }
         return result
 
@@ -89,6 +102,3 @@ class Light(BaseDevice):
                     }
                 }
         return result
-
-    def test(self):
-        return False

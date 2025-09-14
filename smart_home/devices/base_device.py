@@ -7,16 +7,16 @@ from smart_home.states import BaseEnum
 
 class BaseDevice(ABC):
     name_pt: str
-    __states: BaseEnum
-    __transitions: dict
+    states: BaseEnum
+    transitions: dict
 
     def __init__(self, name: str, initial_state):
         self.name = name
         self.__machine = CustomMachine(
             model=self,
-            states=self.__states,
+            states=self.states,
             initial=initial_state,
-            transitions=self.__transitions,
+            transitions=self.transitions,
         )
 
     def to_dict(self):

@@ -4,12 +4,14 @@ from transitions import Machine, Event
 class EventResult:
     def __init__(
         self,
+        device_type: str,
         device_name: str,
         event: str,
         source_state: str,
         destiny_state: str,
         success: bool,
     ):
+        self.device_type = device_type
         self.device_name = device_name
         self.event = event
         self.source_state = source_state
@@ -27,7 +29,7 @@ class CustomEvent(Event):
         try:
             result = super().trigger(model, *args, **kwargs)
         finally:
-            event_result = EventResult(model.name, event_name, source_state, destiny_state, result)
+            event_result = EventResult(type(model).__name__, model.name, event_name, source_state, destiny_state, result)
             return event_result
 
 class CustomMachine(Machine):
