@@ -1,38 +1,23 @@
 import sys
 from abc import ABC
 
-from smart_home.core import House, LoggingMachine
-from smart_home.states import BaseEnum, EnumDescriptor
+from smart_home.core import CustomMachine
+from smart_home.states import BaseEnum
 
 
 class BaseDevice(ABC):
-    states: BaseEnum
-    transitions: dict
-    house = House()
+    name_pt: str
+    __states: BaseEnum
+    __transitions: dict
 
     def __init__(self, name: str, initial_state):
         self.name = name
-        self.machine = LoggingMachine(
+        self.__machine = CustomMachine(
             model=self,
-            states=self.states,
+            states=self.__states,
             initial=initial_state,
-            transitions=self.transitions,
+            transitions=self.__transitions,
         )
-        self.house.add_device(self)
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        if value in [
-            device.name
-            for device in self.house.devices
-            if isinstance(self, type(device))
-        ]:
-            raise ValueError(f"Name '{value}' already exists. Must be unique.")
-        self._name = value
 
     def to_dict(self):
         return {
@@ -56,8 +41,18 @@ class BaseDevice(ABC):
     def get_available_commands(self):
         commands = dict(filter(lambda kv: not kv[0].startswith("to_")
                                           and str(self.state).upper() in kv[1].transitions,
-                               self.machine.events.items()))
+                               self.__machine.events.items()))
         return commands
+
+    @classmethod
+    def get_available_attr(cls):
+        return [name for name, attr in vars(cls).items()
+                if not callable(attr)
+                and not name.startswith("__")
+                and not name == cls.name_pt.__name__]
+
+    def get_available_attr_values(self, attr_name):
+        pass
 
     @classmethod
     def get_command_kwargs(cls, command_name):

@@ -5,6 +5,7 @@ from smart_home.states.outlet_state import OutletState, outlet_transitions
 
 
 class Outlet(BaseDevice):
+    name_pt = "Tomada"
     states = OutletState
     transitions = outlet_transitions
 
@@ -17,8 +18,8 @@ class Outlet(BaseDevice):
 
     def __str__(self):
         return (
-            f"Outlet '{self.name}' [{self.state}] Power: {self.power_w}, "
-            f"Total time on: {self.__total_time}, Total consumption: {self.consumption:.2f} Wh"
+            f"{self.name_pt} '{self.name}' [{self.state}] Potencia: {self.power_w}, "
+            f"Tempo total ligada: {self.__total_time}, Consumo Total: {self.consumption:.2f} Wh"
         )
 
     @property
@@ -56,14 +57,23 @@ class Outlet(BaseDevice):
         return result
 
     @classmethod
+    def get_available_attr_values(cls, attr_name: str):
+        match attr_name:
+            case cls.power_w.__name__:
+                return range(2001)
+        return None
+
+    @classmethod
     def get_command_kwargs(cls, command_name):
         result = {}
         match command_name:
             case "__init__":
+                attr = cls.power_w.__name__
+                values = cls.get_available_attr_values(attr)
                 result = {
-                    "power_w": {
-                        "available_values": range(2001),
-                        "message": "Digite a potência (Entre 0 e 2000):\n> "
+                    attr: {
+                        "available_values": values,
+                        "message": f"Digite a potência (Entre {min(values)} e {max(values)}):\n> "
                     }
                 }
         return result

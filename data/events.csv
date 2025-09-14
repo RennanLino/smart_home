@@ -132,3 +132,13 @@ timestamp,device_name,event,source_state,destiny_state,success
 2025-09-08T12:16:58.344905,Bedroom Light,set_color,on,on,True
 2025-09-08T12:44:34.783729,Bedroom Light,turn_on,off,on,True
 2025-09-08T12:44:54.635206,Bedroom Light,set_color,on,on,True
+2025-09-13T12:50:13.640477,Bedroom Light,turn_off,off,off,False
+2025-09-13T12:50:13.641175,Bedroom Light,turn_on,off,on,True
+2025-09-13T12:50:13.641431,Bedroom Light,set_brightness,on,on,True
+2025-09-13T12:50:13.641633,Bedroom Light,set_color,on,on,True
+2025-09-13T12:50:13.641822,Bedroom Light,turn_off,on,off,True
+2025-09-13T13:30:55.905751,Bedroom Light,turn_off,off,off,False
+2025-09-13T13:30:55.911727,Bedroom Light,turn_on,off,on,True
+2025-09-13T13:30:55.912127,Bedroom Light,set_brightness,on,on,True
+2025-09-13T13:30:55.912461,Bedroom Light,set_color,on,on,True
+2025-09-13T13:30:55.912854,Bedroom Light,turn_off,on,off,True

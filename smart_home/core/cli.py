@@ -1,35 +1,90 @@
-from smart_home.core import House
+from smart_home.core import House, SmartHouseLogger, handle_class_exception, handle_exception, ConfigNotFound, \
+    NoRegisteredDevice, NoRegisteredRoutine
+from smart_home.core.base import Singleton
 from smart_home.devices import BaseDevice
 
 
-def get_option(message, available_options: list[int] = None):
-    option = -1
-    while option not in available_options:
-        option = input(message)
+@handle_class_exception(handle_exception)
+class Cli(metaclass=Singleton):
+    def __init__(self):
+        self.logger = SmartHouseLogger()
+        self.house = House()
 
-        if not option.isnumeric() or int(option) not in available_options:
-            print("Opção inválida")
-        else:
-            option = int(option)
+        try:
+            self.house.load_config()
+        except ConfigNotFound as e:
+            print("Config file not found. Creating a new one...\n")
+            self.logger.warning(e)
+            self.house.save_config()
 
-    return int(option)
 
-def choose_device(house: House):
-    devices = house.devices
-    device_menu = [f"{idx}. {device}" for idx, device in enumerate(devices)]
-    device_menu = "Escolha o dispositivo: \n" + "\n".join(device_menu) + "\n> "
+    @staticmethod
+    def get_option(message: str, available_options: list[int] = None):
+        option = -1
+        #TODO: check what happens when available_options is None
+        while option not in available_options:
+            option = input(message)
 
-    device_option = get_option(device_menu, range(len(devices)))
-    device = devices[device_option]
-    return device
+            if not option.isnumeric() or int(option) not in available_options:
+                print("Opção inválida")
+            else:
+                option = int(option)
 
-def main():
-    house = House()
-    house.load_config()
+        return int(option)
 
-    option = None
-    while option != 10:
-        menu = ("=== SMART HOME HUB ===\n" 
+    def __choose_device(self):
+        devices = self.house.devices
+        device_menu = [f"{idx}. {device}" for idx, device in enumerate(devices)]
+        device_menu = "Escolha o dispositivo: \n" + "\n".join(device_menu) + "\n> "
+        available_devices = list(range(len(devices)))
+
+        device_option = self.get_option(device_menu, available_devices)
+        device = devices[device_option]
+        return device
+
+    def __choose_command(self, device: BaseDevice):
+        commands = device.get_available_commands()
+        command_names = [event_name[1:] if event_name.startswith("_") else event_name
+                         for event_name in commands.keys()]
+        commands_menu = [f"{idx}. {name}" for idx, name in enumerate(command_names)]
+        commands_menu = "Escolha o comando: \n" + "\n".join(commands_menu) + "\n> "
+
+        available_commands = list(range(len(commands)))
+        command_option = int(self.get_option(commands_menu, available_commands))
+        # command_name = command_names[command_option]
+        # return getattr(device, command_name)
+        return command_names[command_option]
+
+    def __choose_args(self, device: BaseDevice, command_name: str):
+        kwargs = {}
+        req_args = device.get_command_kwargs(command_name)
+        if req_args:
+            for arg_name, arg_req in req_args.items():
+                kwargs[arg_name] = self.get_option(arg_req["message"], arg_req["available_values"])
+        return kwargs
+
+    def __choose_device_attribute(self, device: BaseDevice):
+        device_attrs = device.get_available_attr()
+
+        attribute_menu = "".join([f"{idx}. {attribute}\n" for idx, attribute in enumerate(device_attrs)])
+        available_attributes = list(range(len(device_attrs)))
+        attribute_option = self.get_option(attribute_menu, available_attributes)
+        attr_name = device_attrs[attribute_option]
+
+        available_values = device.get_available_attr_values(attr_name)
+        attr_value = self.get_option(f"Digite um valor: ", available_values)
+        return attr_name, attr_value
+
+    def __choose_routine(self):
+        routines = self.house.routines
+        routines_menu = "".join([f"{idx}. {routine.name}" for idx, routine in enumerate(routines)])
+        available_routines = list(range(len(routines)))
+        routine_option = self.get_option(routines_menu, available_routines)
+        routine = routines[routine_option]
+        return routine
+
+    def choose_menu_option(self):
+        menu = ("\n\n=== SMART HOME HUB ===\n" 
                 "1. Listar dispositivos\n"
                 "2. Mostrar dispositivo\n"
                 "3. Executar comando em dispositivo\n"
@@ -43,70 +98,87 @@ def main():
                 "> ")
 
         available_options = list(range(11))
-        option = get_option(menu, available_options)
+        return self.get_option(menu, available_options)
 
+    def list_devices(self):
 
-        match option:
-            case 1:
-                devices = house.devices
-                for device in devices:
-                    print(device)
-            # case 2:
-            case 3:
-                device = choose_device(house)
+        if not self.house.devices:
+            raise NoRegisteredDevice()
 
-                # Event choice
-                commands = device.get_available_commands()
-                command_names = [event_name[1:] if event_name.startswith("_") else event_name
-                                 for  event_name in commands.keys()]
-                commands_menu = [f"{idx}. {name}" for idx, name in enumerate(command_names)]
-                commands_menu = "Escolha o comando: \n" + "\n".join(commands_menu) + "\n> "
+        devices = self.house.devices
+        for device in devices:
+            print(f"{device.name_pt}: {device.name} | {device.state}")
 
-                available_commands = list(range(len(commands)))
-                command_option = int(get_option(commands_menu, available_commands))
-                command_name = command_names[command_option]
-                command_method = getattr(device, command_name)
+    def show_device(self):
+        if not self.house.devices:
+            raise NoRegisteredDevice()
 
-                # Event attributes choice
-                kwargs = device.get_command_kwargs(command_name)
-                if kwargs:
-                    for kwarg_name, kwarg_req in kwargs.items():
-                        kwargs[kwarg_name] = get_option(kwarg_req["message"], kwarg_req["available_values"])
-                    command_method(**kwargs)
-                else:
-                    command_method()
+        device = self.__choose_device()
+        print(device)
 
-            # case 4:
-            # case 5:
-            # case 6:
-            case 7:
-                house.save_config()
-                print("Configurações salvas com sucesso!")
-            case 8:
-                device_classes = BaseDevice.__subclasses__()
-                device_class_menu =  [f"{idx}. {type.__name__}" for idx, type in enumerate(device_classes)]
-                device_class_menu = "Escolha o tipo de dispositivo: \n" + "\n".join(device_class_menu) + "\n> "
-                available_devices = list(range(len(device_classes)))
-                device_class_option = int(get_option(device_class_menu, available_devices))
-                device_class = device_classes[device_class_option]
+    def execute_comand(self):
+        if not self.house.devices:
+            raise NoRegisteredDevice()
 
+        device = self.__choose_device()
+        command_name = self.__choose_command(device)
+        kwargs = self.__choose_args(device, command_name)
+        event_result = self.house.run_command(device, command_name, kwargs)
+        self.logger.log_event_to_csv(vars(event_result))
+
+    def change_device_attribute(self):
+        if not self.house.devices:
+            raise NoRegisteredDevice()
+
+        device = self.__choose_device()
+        attr_name, attr_value = self.__choose_device_attribute(device)
+        self.house.set_device_attr(device, attr_name, attr_value)
+
+    def run_routine(self):
+        if not self.house.devices:
+            raise NoRegisteredRoutine()
+
+        routine = self.__choose_routine()
+        self.house.run_routine(routine)
+
+    def save_house_config(self):
+        self.house.save_config()
+        print("Configurações salvas com sucesso!")
+
+    def add_device(self):
+        device_classes = BaseDevice.__subclasses__()
+        device_class_menu = [f"{idx}. {_class.name_pt}" for idx, _class in enumerate(device_classes)]
+        device_class_menu = "Escolha o tipo de dispositivo: \n" + "\n".join(device_class_menu) + "\n> "
+        available_devices = list(range(len(device_classes)))
+
+        device_class_option = int(self.get_option(device_class_menu, available_devices))
+        device_class = device_classes[device_class_option]
+
+        device_name = ""
+        while device_name == "":
+            device_name = input("Digite o nome do dispositivo: ")
+            if device_name in [device.name for device in self.house.devices]:
+                print(f"O nome {device_name} indisponível, escolha outro.")
                 device_name = ""
-                while device_name == "":
-                    device_name = input("Digite o nome do dispositivo: ")
-                    if device_name in [device.name for device in house.devices]:
-                        print(f"O nome {device_name} indisponível, escolha outro.")
-                        device_name = ""
 
-                kwargs = device_class.get_command_kwargs("__init__")
-                if kwargs:
-                    for kwarg_name, kwarg_req in kwargs.items():
-                        kwargs[kwarg_name] = get_option(kwarg_req["message"], kwarg_req["available_values"])
-                    device_class(device_name, **kwargs)
-                else:
-                    device_class(device_name)
-            case 9:
-                device = choose_device(house)
-                house.remove_device(device)
-            case 10:
-                house.save_config()
-                print("Saindo...")
+        kwargs = device_class.get_command_kwargs("__init__")
+        if kwargs:
+            for kwarg_name, kwarg_req in kwargs.items():
+                kwargs[kwarg_name] = self.get_option(kwarg_req["message"], kwarg_req["available_values"])
+            device = device_class(device_name, **kwargs)
+        else:
+            device = device_class(device_name)
+
+        self.house.add_device(device)
+
+
+    def remove_device(self):
+        if not self.house.devices:
+            raise NoRegisteredDevice()
+
+        device = self.__choose_device()
+        self.house.remove_device(device)
+
+    def finish(self):
+        self.house.save_config()
+        print("Saindo...")

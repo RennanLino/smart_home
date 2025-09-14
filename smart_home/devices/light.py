@@ -4,6 +4,7 @@ from smart_home.states.base_enum import EnumDescriptor
 
 
 class Light(BaseDevice):
+    name_pt = "Luz"
     states = LightState
     state = EnumDescriptor(LightState)
     __color = EnumDescriptor(LightColor)
@@ -21,7 +22,7 @@ class Light(BaseDevice):
         self.color = color
 
     def __str__(self):
-        return f"Light '{self.name}' [{self.state}] Brightness: {self.brightness}, Color: {self.color}"
+        return f"({self.name_pt}) '{self.name}' [{self.state}] Brilho: {self.brightness}, Cor: {self.color}"
 
     @property
     def brightness(self):
@@ -58,21 +59,36 @@ class Light(BaseDevice):
         return result
 
     @classmethod
+    def get_available_attr_values(cls, attr_name: str):
+        result = None
+        match attr_name:
+            case cls.brightness.__name__:
+                result =  range(101)
+            case cls.color.__name__:
+                result =  [c.value for c in LightColor]
+        return result
+
+    @classmethod
     def get_command_kwargs(cls, command_name):
-        result = {}
+        result = super().get_command_kwargs(command_name)
         match command_name:
             case "set_brightness":
+                attr = cls.brightness.__name__
                 result = {
-                    "brightness": {
-                        "available_values": range(101),
+                    attr : {
+                        "available_values": cls.get_available_attr_values(attr),
                         "message": "Digite o brilho (entre 0 e 100):\n> "
                     }
                 }
             case "set_color":
+                attr = cls.color.__name__
                 result = {
-                    "color": {
-                        "available_values": [c.value for c in LightColor],
+                    attr : {
+                        "available_values": cls.get_available_attr_values(attr),
                         "message": "Digite um valor para a cor :\n" + "\n".join([f"{c.value}. {c.name}" for c in LightColor]) + "\n> "
                     }
                 }
         return result
+
+    def test(self):
+        return False

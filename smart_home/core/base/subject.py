@@ -1,8 +1,7 @@
-from abc import ABC
 from typing import List
 
 
-class Subject(ABC):
+class Subject:
     def __init__(self):
         self.observers: List["Observer"] = []
 

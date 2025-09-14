@@ -1,6 +1,4 @@
-from transitions import Machine, Event, MachineError
-
-from smart_home.core import LogLevel, Logger
+from transitions import Machine, Event
 
 
 class EventResult:
@@ -19,8 +17,7 @@ class EventResult:
         self.success = success
 
 
-class LoggingEvent(Event):
-    logger = Logger()
+class CustomEvent(Event):
 
     def trigger(self, model: "BaseDevice", *args, **kwargs):
         result = False
@@ -29,20 +26,9 @@ class LoggingEvent(Event):
         event_name = self.name[1:] if self.name.startswith("_") else self.name
         try:
             result = super().trigger(model, *args, **kwargs)
-        except MachineError as e:
-            self.logger.log(str(e), LogLevel.WARNING)
-            raise
-        except Exception as e:
-            self.logger.log(str(e), LogLevel.ERROR)
-            raise
         finally:
-            result = EventResult(
-                model.name, event_name, source_state, destiny_state, result
-            )
-            self.logger.log_event_to_csv(vars(result))
-            model.house.notify_transition_event(result)
-            return result
+            event_result = EventResult(model.name, event_name, source_state, destiny_state, result)
+            return event_result
 
-
-class LoggingMachine(Machine):
-    event_cls = LoggingEvent
+class CustomMachine(Machine):
+    event_cls = CustomEvent

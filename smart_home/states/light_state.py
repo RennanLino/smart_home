@@ -21,7 +21,7 @@ class LightColor(BaseEnum):
 
 
 light_transitions = [
-    {"trigger": "turn_on", "source": LightState.OFF, "dest": LightState.ON},
+    {"trigger": "turn_on", "source": LightState.OFF, "dest": LightState.ON, "conditions": "test"},
     {"trigger": "turn_off", "source": LightState.ON, "dest": LightState.OFF},
     {
         "trigger": "set_brightness",

@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import Any
 
+from smart_home.core import Persistence
 from smart_home.core.base.singleton import Singleton
 
 transitions_logger = logging.getLogger("transitions.core")
@@ -19,11 +20,14 @@ class LogLevel(Enum):
         return self.name.lower()
 
 
-class Logger(metaclass=Singleton):
+class SmartHouseLogger(logging.Logger, metaclass=Singleton):
     _instance = None
     __event_file_path = "data/events.csv"
     __report_file_path = "data/reports.csv"
 
+    def __init__(self):
+        super().__init__("smart_house")
+        self._initialize_logger()
 
     def _initialize_logger(self):
         logging.basicConfig(
@@ -34,7 +38,6 @@ class Logger(metaclass=Singleton):
                 logging.FileHandler("data/system.log"),
             ],
         )
-        self.__logger = logging.getLogger()
 
     def log_event_to_csv(self, message: dict[str, Any]):
         from smart_home.core import Persistence
@@ -44,12 +47,4 @@ class Logger(metaclass=Singleton):
         Persistence.write_to_csv(self.__event_file_path, message)
 
     def log_report_to_csv(self, message: dict[str, Any]):
-        from smart_home.core import Persistence
-
         Persistence.write_to_csv(self.__report_file_path, message)
-
-    def log(self, message: str, level: LogLevel = LogLevel.INFO):
-        log_method = getattr(self.__logger, str(level), None)
-        if not log_method:
-            raise Exception(f"Log level {level} not supported")
-        log_method(message)
