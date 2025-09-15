@@ -48,6 +48,8 @@ class BaseDevice(ABC):
     def get_available_attr(cls):
         return [name for name, attr in vars(cls).items()
                 if not callable(attr)
+                and name not in ["state", "transitions"]
+                and not name.startswith("_")
                 and not name.startswith("__")
                 and not name == "name_pt"]
 

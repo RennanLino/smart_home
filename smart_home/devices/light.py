@@ -18,12 +18,13 @@ class Light(BaseDevice):
         brightness=100,
         color=LightColor.NEUTRAL,
         total_time=0,
+        turned_on_at=None,
         initial_state=LightState.OFF,
     ):
         super().__init__(name, initial_state)
         self.brightness = brightness
         self.color = color
-        self.__turned_on_at: datetime | None = datetime.now() if initial_state == LightState.ON else None
+        self.__turned_on_at: datetime | None = datetime.fromisoformat(turned_on_at) if turned_on_at else None
         self.__total_time = timedelta(seconds=total_time)
 
     def __str__(self):
@@ -55,6 +56,12 @@ class Light(BaseDevice):
     def _set_color(self, color: LightColor):
         self.color = color
 
+    @property
+    def total_time(self):
+        if self.state == OutletState.ON and self.__turned_on_at:
+            self.__total_time += datetime.now() - self.__turned_on_at
+            return self.__total_time
+
     def on_enter_ON(self):
         self.__turned_on_at = datetime.now()
 
@@ -67,7 +74,7 @@ class Light(BaseDevice):
         result["atributes"] = {
             "brightness": self.brightness,
             "color": str(self.color),
-            "total_time": self.__total_time.total_seconds(),
+            "total_time": self.__turned_on_at.isoformat() if self.__turned_on_at else None,
         }
         return result
 

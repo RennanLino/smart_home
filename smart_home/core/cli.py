@@ -37,7 +37,7 @@ class Cli(metaclass=Singleton):
     def __choose_device(self):
         devices = self.house.devices
 
-        device_menu = [f"{idx}. {device.name}" for idx, device in enumerate(devices)]
+        device_menu = [f"{idx}. {type(device).__name__} - {device.name}" for idx, device in enumerate(devices)]
         device_menu = "Escolha o dispositivo: \n" + "\n".join(device_menu) + "\n> "
 
         available_devices = list(range(len(devices)))

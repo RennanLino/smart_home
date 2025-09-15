@@ -11,11 +11,11 @@ class Outlet(BaseDevice):
     states = OutletState
     transitions = outlet_transitions
 
-    def __init__(self, name, power_w, total_time = 0, initial_state=OutletState.OFF):
+    def __init__(self, name, power_w, total_time = 0, turned_on_at=None, initial_state=OutletState.OFF):
         super().__init__(name, initial_state)
         self.__power_w = 0
         self.power_w = power_w
-        self.__turned_on_at: datetime | None = datetime.now() if initial_state == OutletState.ON else None
+        self.__turned_on_at: datetime | None = datetime.fromisoformat(turned_on_at) if turned_on_at else None
         self.__total_time = timedelta(seconds=total_time)
 
     def __str__(self):
@@ -44,6 +44,12 @@ class Outlet(BaseDevice):
         hours = total_time.total_seconds() / 3600
         return hours * self.__power_w
 
+    @property
+    def total_time(self):
+        if self.state == OutletState.ON and self.__turned_on_at:
+            self.__total_time += datetime.now() - self.__turned_on_at
+            return self.__total_time
+
     def on_enter_ON(self):
         self.__turned_on_at = datetime.now()
 
@@ -55,7 +61,8 @@ class Outlet(BaseDevice):
         result = super().to_dict()
         result["atributes"] = {
             "power_w": self.power_w,
-            "total_time": self.__total_time.total_seconds(),
+            "total_time": self.total_time.total_seconds(),
+            "turned_on_at": self.__turned_on_at.isoformat() if self.__turned_on_at else None,
         }
         return result
 

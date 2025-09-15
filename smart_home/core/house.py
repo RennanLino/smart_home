@@ -40,7 +40,7 @@ class House(Subject, metaclass=Singleton):
 
 
     def add_device(self, device: "BaseDevice"):
-        if device.name in [device.name for device in self.devices]:
+        if device.name.lower() in [device.name.lower() for device in self.devices]:
             raise ValueError(f"Ja existe um dispositivo com nome '{device.name}'. O nome deve ser unico.")
 
         self.__devices.append(device)
