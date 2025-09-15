@@ -49,7 +49,7 @@ class BaseDevice(ABC):
         return [name for name, attr in vars(cls).items()
                 if not callable(attr)
                 and not name.startswith("__")
-                and not name == cls.name_pt.__name__]
+                and not name == "name_pt"]
 
     def get_available_attr_values(self, attr_name):
         pass

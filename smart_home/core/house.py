@@ -27,7 +27,7 @@ class House(Subject, metaclass=Singleton):
         self.version = "1.0"
         self.__devices: List[BaseDevice] = []
         self.__routines: List[Routine] = []
-        self.__observers: List[Observer] = [ConsoleObserver()]
+        self.subscribe(ConsoleObserver())
 
 
     @property
@@ -37,6 +37,7 @@ class House(Subject, metaclass=Singleton):
     @property
     def routines(self):
         return self.__routines
+
 
     def add_device(self, device: "BaseDevice"):
         if device.name in [device.name for device in self.devices]:
@@ -180,7 +181,8 @@ class House(Subject, metaclass=Singleton):
             self.name = hub["name"]
             self.version = hub["version"]
             for device_dict in house_dict["devices"]:
-                BaseDevice.from_dict(device_dict)
+                device = BaseDevice.from_dict(device_dict)
+                self.devices.append(device)
             self.__routines = [
                 Routine.from_dict(routine_name, command_dicts, self.__devices)
                 for routine_name, command_dicts in house_dict["routines"].items()

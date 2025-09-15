@@ -20,7 +20,7 @@ class Outlet(BaseDevice):
 
     def __str__(self):
         return (
-            f"{self.name_pt} '{self.name}' [{self.state}] Potencia: {self.power_w}, "
+            f"{self.name_pt}: '{self.name}' [{self.state}] Potencia: {self.power_w}, "
             f"Tempo total ligada: {self.__total_time}, Consumo Total: {self.consumption:.2f} Wh"
         )
 
@@ -62,7 +62,7 @@ class Outlet(BaseDevice):
     @classmethod
     def get_available_attr_values(cls, attr_name: str):
         match attr_name:
-            case cls.power_w.__name__:
+            case "power_w":
                 return range(2001)
         return None
 
@@ -71,7 +71,7 @@ class Outlet(BaseDevice):
         result = {}
         match command_name:
             case "__init__":
-                attr = cls.power_w.__name__
+                attr = "power_w"
                 values = cls.get_available_attr_values(attr)
                 result = {
                     attr: {

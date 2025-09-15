@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from enum import Enum, auto
 from typing import Any, List
@@ -25,12 +26,18 @@ class SmartHouseLogger(logging.Logger, metaclass=Singleton):
 
     def __init__(self):
         super().__init__("smart_house")
+
+        log_path = "data/system.log"
+        log_dir = os.path.dirname("data/system.log")
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
         logging.basicConfig(
             level=logging.INFO,
             format="[%(asctime)s] - %(name)s - %(levelname)s - %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             handlers=[
-                logging.FileHandler("data/system.log"),
+                logging.FileHandler(log_path),
             ],
         )
 

@@ -1,7 +1,7 @@
 class Command:
-    def __init__(self, name: str, device: "BaseDevice", **kwargs):
-        self.name = name
+    def __init__(self, device: "BaseDevice", name: str, **kwargs):
         self.device = device
+        self.name = name
         self.kwargs = kwargs
 
     def run(self):

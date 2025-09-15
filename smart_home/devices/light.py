@@ -27,7 +27,7 @@ class Light(BaseDevice):
         self.__total_time = timedelta(seconds=total_time)
 
     def __str__(self):
-        return f"({self.name_pt}) '{self.name}' [{self.state}] Brilho: {self.brightness}, Cor: {self.color}"
+        return f"{self.name_pt}: '{self.name}' [{self.state}] Brilho: {self.brightness}, Cor: {self.color}"
 
     @property
     def brightness(self):
@@ -75,9 +75,9 @@ class Light(BaseDevice):
     def get_available_attr_values(cls, attr_name: str):
         result = None
         match attr_name:
-            case cls.brightness.__name__:
+            case "brightness":
                 result =  range(101)
-            case cls.color.__name__:
+            case "color":
                 result =  [c.value for c in LightColor]
         return result
 
@@ -86,7 +86,7 @@ class Light(BaseDevice):
         result = super().get_command_kwargs(command_name)
         match command_name:
             case "set_brightness":
-                attr = cls.brightness.__name__
+                attr = "brightness"
                 result = {
                     attr : {
                         "available_values": cls.get_available_attr_values(attr),
@@ -94,7 +94,7 @@ class Light(BaseDevice):
                     }
                 }
             case "set_color":
-                attr = cls.color.__name__
+                attr = "color"
                 result = {
                     attr : {
                         "available_values": cls.get_available_attr_values(attr),

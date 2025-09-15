@@ -14,7 +14,7 @@ class Door(BaseDevice):
         self.__invalid_tries = 0
 
     def __str__(self):
-        return f"{self.name_pt} '{self.name}' [{self.state}] Tentativas invalidas de destrancar: {self.invalid_tries}"
+        return f"{self.name_pt}: '{self.name}' [{self.state}] Tentativas invalidas de destrancar: {self.invalid_tries}"
 
     @property
     def invalid_tries(self):
