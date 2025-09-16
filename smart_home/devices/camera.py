@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from smart_home.devices.base_device import BaseDevice
+from smart_home.devices import BaseDevice
 from smart_home.states import EnumDescriptor, camera_transitions, CameraState
 
 
