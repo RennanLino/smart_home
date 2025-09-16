@@ -1,20 +1,27 @@
 from collections import defaultdict
-from datetime import datetime
-from enum import auto, Enum
+from datetime import datetime, timedelta
+from enum import Enum
 from typing import List
-from unittest import case
 
-from smart_home.core.base import Subject, Singleton, Observer
+from smart_home.core import (
+    Persistence,
+    ConsoleObserver,
+    Routine,
+    Command,
+    ConfigBadFormat,
+    EventResult,
+)
+from smart_home.core.base import Subject, Singleton
 from smart_home.devices import BaseDevice, Outlet, Light
-from smart_home.core import Persistence, ConsoleObserver, Routine, Command, ConfigBadFormat, EventResult
 
 
 class ReportType(Enum):
     OUTLET_CONSUMPTION = "Consumo por tomada inteligente"
-    LIGHT_TOTAL_TIME = "Tempo total em que cada luz permaneceu ligada"
+    LIGHT_USAGE = "Tempo total em que cada luz permaneceu ligada"
     MOST_USED_DEVICES = "Dispositivos mais usados"
     MOST_USED_COMMANDS = "Comandos mais usados por dispositivo"
     FAILURE_PERCENTAGE = "Percentual de falhas de transição"
+
 
 class House(Subject, metaclass=Singleton):
     event_file_path = "data/events.csv"
@@ -29,7 +36,6 @@ class House(Subject, metaclass=Singleton):
         self.__routines: List[Routine] = []
         self.subscribe(ConsoleObserver())
 
-
     @property
     def devices(self):
         return self.__devices
@@ -38,10 +44,11 @@ class House(Subject, metaclass=Singleton):
     def routines(self):
         return self.__routines
 
-
     def add_device(self, device: "BaseDevice"):
         if device.name.lower() in [device.name.lower() for device in self.devices]:
-            raise ValueError(f"Ja existe um dispositivo com nome '{device.name}'. O nome deve ser unico.")
+            raise ValueError(
+                f"Ja existe um dispositivo com nome '{device.name}'. O nome deve ser unico."
+            )
 
         self.__devices.append(device)
         message = f"[EVENT] Device Added: {type(device).__name__} - {device.name}"
@@ -54,7 +61,7 @@ class House(Subject, metaclass=Singleton):
 
     def set_device_attr(self, device, attr_name, attr_value):
         setattr(device, attr_name, attr_value)
-        message = f"[EVENT] ({type(device).__name__}) {device.name} - {attr_name} = {attr_value}"
+        message = f"[EVENT] ({type(device).__name__}) {device.name}: {attr_name} alterado para {attr_value}"
         self.notify(message)
 
     def run_routine(self, routine: Routine):
@@ -73,8 +80,8 @@ class House(Subject, metaclass=Singleton):
         match report_type:
             case ReportType.OUTLET_CONSUMPTION:
                 reports = self.report_outlet_consumption(*args, **kwargs)
-            case ReportType.LIGHT_TOTAL_TIME:
-                reports = self.report_light_total_time()
+            case ReportType.LIGHT_USAGE:
+                reports = self.report_light_usage()
             case ReportType.MOST_USED_DEVICES:
                 reports = self.report_most_used_devices()
             case ReportType.MOST_USED_COMMANDS:
@@ -84,72 +91,215 @@ class House(Subject, metaclass=Singleton):
 
         return reports
 
-    def report_outlet_consumption(self, start:datetime, end:datetime):
+    def report_outlet_consumption(self, start: datetime, end: datetime):
+        end = end + timedelta(hours=23, minutes=59, seconds=59)
         events = Persistence.load_from_csv(self.event_file_path)
-        outlet_events = list(filter(lambda e: e['device_type'] == Outlet.__name__, events))
+        outlet_events = [
+            event
+            for event in events
+            if event["device_type"] == Outlet.__name__
+            and start <= datetime.fromisoformat(event["timestamp"]) <= end
+        ]
 
-        pass
+        grouped_events = defaultdict(list)
+        for event in outlet_events:
+            event_time = datetime.fromisoformat(event["timestamp"])
+            if start <= event_time <= end:
+                grouped_events[event["device_name"]].append(event)
 
-    def repot_light_total_time(self):
-        pass
+        report_list = []
+
+        for device_name, event_list in grouped_events.items():
+            device = next((d for d in self.__devices if d.name == device_name), None)
+
+            if device:
+                total_duration_seconds = 0
+                is_on = False
+                last_on_time = None
+
+                event_list.sort(key=lambda x: datetime.fromisoformat(x["timestamp"]))
+
+                for event in event_list:
+                    timestamp = datetime.fromisoformat(event["timestamp"])
+                    event_type = event["event"]
+
+                    if event_type == "turn_on" and not is_on:
+                        is_on = True
+                        last_on_time = timestamp
+                    elif event_type == "turn_off" and is_on:
+                        is_on = False
+                        total_duration_seconds += (
+                            timestamp - last_on_time
+                        ).total_seconds()
+
+                if is_on:
+                    total_duration_seconds += (end - last_on_time).total_seconds()
+
+                duration_hours = total_duration_seconds / 3600
+                total_wh = device.power_w * duration_hours
+
+                if duration_hours > 0:
+                    report_list.append(
+                        {
+                            "device_name": device_name,
+                            "start": min(
+                                datetime.fromisoformat(e["timestamp"])
+                                for e in event_list
+                            ).isoformat(),
+                            "end": max(
+                                datetime.fromisoformat(e["timestamp"])
+                                for e in event_list
+                            ).isoformat(),
+                            "total_wh": total_wh,
+                        }
+                    )
+
+        return report_list
+
+    def report_light_usage(self):
+        events = Persistence.load_from_csv(self.event_file_path)
+
+        grouped_events = defaultdict(list)
+        for event in events:
+            if event["device_type"] == Light.__name__:
+                grouped_events[event["device_name"]].append(event)
+
+        total_on_times = {}
+
+        for device_name, event_list in grouped_events.items():
+            event_list.sort(key=lambda x: datetime.fromisoformat(x["timestamp"]))
+
+            total_duration_hours = 0
+            last_on_time = None
+            is_on = False
+
+            for event in event_list:
+                timestamp = datetime.fromisoformat(event["timestamp"])
+                event_type = event["event"]
+
+                if event_type == "turn_on" and not is_on:
+                    is_on = True
+                    last_on_time = timestamp
+                elif event_type == "turn_off" and is_on:
+                    is_on = False
+                    total_duration_hours += (
+                        timestamp - last_on_time
+                    ).total_seconds() / 3600
+
+            if is_on and last_on_time:
+                last_log_timestamp = datetime.fromisoformat(events[-1]["timestamp"])
+                total_duration_hours += (
+                    last_log_timestamp - last_on_time
+                ).total_seconds() / 3600
+
+            total_on_times[device_name] = total_duration_hours
+
+        result_list = [
+            {"device_name": name, "total_time_h": time}
+            for name, time in total_on_times.items()
+        ]
+
+        return result_list
 
     def report_most_used_devices(self):
         events = Persistence.load_from_csv(self.event_file_path)
         result = []
         for event in events:
-            device_name = event.get('device_name')
-            device_dict = next((device_dict for device_dict in result if device_dict['device_name'] == device_name), None)
+            device_name = event.get("device_name")
+            device_dict = next(
+                (
+                    device_dict
+                    for device_dict in result
+                    if device_dict["device_name"] == device_name
+                ),
+                None,
+            )
             if device_dict:
-                device_dict['times_used'] = device_dict['times_used'] + 1
+                device_dict["times_used"] = device_dict["times_used"] + 1
             else:
                 device_dict = {"device_name": device_name, "times_used": 1}
                 result.append(device_dict)
-        return sorted(result, key=lambda device_dict: -device_dict['times_used'])
+        return sorted(result, key=lambda device_dict: -device_dict["times_used"])
 
     def report_most_used_commands(self):
         events = Persistence.load_from_csv(self.event_file_path)
         result = []
         for event in events:
-            device_name = event.get('device_name')
-            event_name = event.get('event')
-            device_dict = next((device_dict for device_dict in result
-                                if device_dict['device_name'] == device_name
-                                and device_dict['event'] == event_name), None)
+            device_name = event.get("device_name")
+            event_name = event.get("event")
+            device_dict = next(
+                (
+                    device_dict
+                    for device_dict in result
+                    if device_dict["device_name"] == device_name
+                    and device_dict["event"] == event_name
+                ),
+                None,
+            )
             if device_dict:
-                device_dict['times_used'] = device_dict['times_used'] + 1
+                device_dict["times_used"] = device_dict["times_used"] + 1
             else:
-                device_dict = {"device_name": device_name, "event": event_name, "times_used": 1}
+                device_dict = {
+                    "device_name": device_name,
+                    "event": event_name,
+                    "times_used": 1,
+                }
                 result.append(device_dict)
-        return sorted(result, key=lambda device_dict: (-device_dict['times_used'], device_dict['device_name'] ))
+        return sorted(
+            result,
+            key=lambda device_dict: (
+                -device_dict["times_used"],
+                device_dict["device_name"],
+            ),
+        )
 
     def report_failure_percentage(self):
         events = Persistence.load_from_csv(self.event_file_path)
         result = []
         for event in events:
-            device_name = event.get('device_name')
-            event_name = event.get('event')
-            success = True if event.get('success') == "True" else False
-            device_dict = next((device_dict for device_dict in result
-                                if device_dict['device_name'] == device_name
-                                and device_dict['event'] == event_name), None)
+            device_name = event.get("device_name")
+            event_name = event.get("event")
+            success = True if event.get("success") == "True" else False
+            device_dict = next(
+                (
+                    device_dict
+                    for device_dict in result
+                    if device_dict["device_name"] == device_name
+                    and device_dict["event"] == event_name
+                ),
+                None,
+            )
             if device_dict:
-                device_dict['times_used'] = device_dict['times_used'] + 1
+                device_dict["times_used"] = device_dict["times_used"] + 1
 
                 if not success:
-                    device_dict['times_failed'] = device_dict['times_failed'] +1
+                    device_dict["times_failed"] = device_dict["times_failed"] + 1
 
-                if device_dict['times_failed'] != 0:
-                    device_dict['failure_percentage'] = round((device_dict['times_failed'] / device_dict['times_used'] * 100), 2)
+                if device_dict["times_failed"] != 0:
+                    device_dict["failure_percentage"] = round(
+                        (device_dict["times_failed"] / device_dict["times_used"] * 100),
+                        2,
+                    )
                 else:
-                    device_dict['failure_percentage'] = 0
+                    device_dict["failure_percentage"] = 0
             else:
                 times_failed = 0 if success else 1
                 failure_percentage = 0 if success else 100
-                device_dict = {"device_name": device_name, "event": event_name, "times_used": 1,
-                               "times_failed": times_failed, "failure_percentage": failure_percentage}
+                device_dict = {
+                    "device_name": device_name,
+                    "event": event_name,
+                    "times_used": 1,
+                    "times_failed": times_failed,
+                    "failure_percentage": failure_percentage,
+                }
                 result.append(device_dict)
-        return sorted(result, key=lambda device_dict: (-device_dict['failure_percentage'], device_dict['device_name'] ))
-
+        return sorted(
+            result,
+            key=lambda device_dict: (
+                -device_dict["failure_percentage"],
+                device_dict["device_name"],
+            ),
+        )
 
     def notify_transition_event(self, event_result: EventResult):
         message = f"[EVENT] Executed Command: {vars(event_result)}"
@@ -169,7 +319,11 @@ class House(Subject, metaclass=Singleton):
                 "version": self.version,
             },
             "devices": [device.to_dict() for device in self.devices],
-            "routines": {name: commands for routine in self.__routines for name, commands in routine.to_dict().items()},
+            "routines": {
+                name: commands
+                for routine in self.__routines
+                for name, commands in routine.to_dict().items()
+            },
         }
         return result
 

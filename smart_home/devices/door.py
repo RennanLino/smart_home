@@ -4,6 +4,7 @@ from smart_home.states.door_state import DoorState, door_transitions
 
 
 class Door(BaseDevice):
+    AVAILABLE_ATTRIBUTES = ["power_w", "total_time"]
     name_pt = "Porta"
     state = EnumDescriptor(DoorState)
     states = DoorState

@@ -6,6 +6,7 @@ from smart_home.states import BaseEnum
 
 
 class BaseDevice(ABC):
+    available_attributes = []
     name_pt: str
     states: BaseEnum
     transitions: dict
@@ -34,26 +35,25 @@ class BaseDevice(ABC):
             device_dict["name"],
             **device_dict["atributes"],
             initial_state=device_dict["state"]
-            #initial_state=device_class.states.from_str(device_dict["state"])
+            # initial_state=device_class.states.from_str(device_dict["state"])
         )
         return device_obj
 
     def get_available_commands(self):
-        commands = dict(filter(lambda kv: not kv[0].startswith("to_")
-                                          and str(self.state).upper() in kv[1].transitions,
-                               self.__machine.events.items()))
+        commands = dict(
+            filter(
+                lambda kv: not kv[0].startswith("to_")
+                and str(self.state).upper() in kv[1].transitions,
+                self.__machine.events.items(),
+            )
+        )
         return commands
 
     @classmethod
     def get_available_attr(cls):
-        return [name for name, attr in vars(cls).items()
-                if not callable(attr)
-                and name not in ["state", "transitions"]
-                and not name.startswith("_")
-                and not name.startswith("__")
-                and not name == "name_pt"]
+        return cls.available_attributes
 
-    def get_available_attr_values(self, attr_name):
+    def get_available_attr_req(self, attr_name):
         pass
 
     @classmethod

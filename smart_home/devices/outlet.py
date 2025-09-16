@@ -6,22 +6,32 @@ from smart_home.states.outlet_state import OutletState, outlet_transitions
 
 
 class Outlet(BaseDevice):
+    available_attributes = ["power_w"]
     name_pt = "Tomada"
     state = EnumDescriptor(OutletState)
     states = OutletState
     transitions = outlet_transitions
 
-    def __init__(self, name, power_w, total_time = 0, turned_on_at=None, initial_state=OutletState.OFF):
+    def __init__(
+        self,
+        name,
+        power_w,
+        total_time=0,
+        turned_on_at=None,
+        initial_state=OutletState.OFF,
+    ):
         super().__init__(name, initial_state)
         self.__power_w = 0
         self.power_w = power_w
-        self.__turned_on_at: datetime | None = datetime.fromisoformat(turned_on_at) if turned_on_at else None
-        self.__total_time = timedelta(seconds=total_time)
+        self.__turned_on_at: datetime | None = (
+            datetime.fromisoformat(turned_on_at) if turned_on_at else None
+        )
+        self.__total_time = timedelta(seconds=total_time)  # if total_time else None
 
     def __str__(self):
         return (
-            f"{self.name_pt}: '{self.name}' [{self.state}] Potencia: {self.power_w}, "
-            f"Tempo total ligada: {self.__total_time}, Consumo Total: {self.consumption:.2f} Wh"
+            f"{self.name_pt}: '{self.name}' [{self.state}] Potencia: {self.power_w}, \n"
+            f"Consumo Total: {self.consumption:.2f} Wh, Tempo total ligada: {self.total_time}"
         )
 
     @property
@@ -48,7 +58,11 @@ class Outlet(BaseDevice):
     def total_time(self):
         if self.state == OutletState.ON and self.__turned_on_at:
             self.__total_time += datetime.now() - self.__turned_on_at
-            return self.__total_time
+        return self.__total_time
+
+    @property
+    def turned_on_at(self):
+        return self.__total_time
 
     def on_enter_ON(self):
         self.__turned_on_at = datetime.now()
@@ -61,16 +75,21 @@ class Outlet(BaseDevice):
         result = super().to_dict()
         result["atributes"] = {
             "power_w": self.power_w,
-            "total_time": self.total_time.total_seconds(),
-            "turned_on_at": self.__turned_on_at.isoformat() if self.__turned_on_at else None,
+            "total_time": (self.total_time.total_seconds() if self.total_time else 0),
+            "turned_on_at": (
+                self.__turned_on_at.isoformat() if self.__turned_on_at else None
+            ),
         }
         return result
 
     @classmethod
-    def get_available_attr_values(cls, attr_name: str):
+    def get_available_attr_req(cls, attr_name: str):
         match attr_name:
             case "power_w":
-                return range(2001)
+                return {
+                    "available_values": range(2001),
+                    "message": f"Digite a potência (Entre 0 e 2000 W):\n> ",
+                }
         return None
 
     @classmethod
@@ -78,12 +97,5 @@ class Outlet(BaseDevice):
         result = {}
         match command_name:
             case "__init__":
-                attr = "power_w"
-                values = cls.get_available_attr_values(attr)
-                result = {
-                    attr: {
-                        "available_values": values,
-                        "message": f"Digite a potência (Entre {min(values)} e {max(values)}):\n> "
-                    }
-                }
+                result = {"power_w": cls.get_available_attr_req("power_w")}
         return result

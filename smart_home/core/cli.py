@@ -1,5 +1,14 @@
-from smart_home.core import House, SmartHouseLogger, handle_class_exception, handle_exception, ConfigNotFound, \
-    NoRegisteredDevice, NoRegisteredRoutine
+from datetime import datetime
+
+from smart_home.core import (
+    House,
+    SmartHouseLogger,
+    handle_class_exception,
+    handle_exception,
+    ConfigNotFound,
+    NoRegisteredDevice,
+    NoRegisteredRoutine,
+)
 from smart_home.core.base import Singleton
 from smart_home.core.exceptions import NoAvailableInfoToReport
 from smart_home.core.house import ReportType
@@ -18,11 +27,10 @@ class Cli(metaclass=Singleton):
             print("Config file not found. Creating a new one...\n")
             self.house.save_config()
 
-
     @staticmethod
     def get_option(message: str, available_options: list[int] = None):
         option = -1
-        #TODO: check what happens when available_options is None
+        # TODO: check what happens when available_options is None
         while option not in available_options:
             option = input(message)
 
@@ -37,7 +45,10 @@ class Cli(metaclass=Singleton):
     def __choose_device(self):
         devices = self.house.devices
 
-        device_menu = [f"{idx}. {type(device).__name__} - {device.name}" for idx, device in enumerate(devices)]
+        device_menu = [
+            f"{idx}. {device.name_pt} - {device.name}"
+            for idx, device in enumerate(devices)
+        ]
         device_menu = "Escolha o dispositivo: \n" + "\n".join(device_menu) + "\n> "
 
         available_devices = list(range(len(devices)))
@@ -48,8 +59,10 @@ class Cli(metaclass=Singleton):
 
     def __choose_command(self, device: BaseDevice):
         commands = device.get_available_commands()
-        command_names = [event_name[1:] if event_name.startswith("_") else event_name
-                         for event_name in commands.keys()]
+        command_names = [
+            event_name[1:] if event_name.startswith("_") else event_name
+            for event_name in commands.keys()
+        ]
 
         commands_menu = [f"{idx}. {name}" for idx, name in enumerate(command_names)]
         commands_menu = "Escolha o comando: \n" + "\n".join(commands_menu) + "\n> "
@@ -65,13 +78,17 @@ class Cli(metaclass=Singleton):
         req_args = device.get_command_kwargs(command_name)
         if req_args:
             for arg_name, arg_req in req_args.items():
-                kwargs[arg_name] = self.get_option(arg_req["message"], arg_req["available_values"])
+                kwargs[arg_name] = self.get_option(
+                    arg_req["message"], arg_req["available_values"]
+                )
         return kwargs
 
     def __choose_device_attribute(self, device: BaseDevice):
         device_attrs = device.get_available_attr()
 
-        attribute_menu = [f"{idx}. {attribute}" for idx, attribute in enumerate(device_attrs)]
+        attribute_menu = [
+            f"{idx}. {attribute}" for idx, attribute in enumerate(device_attrs)
+        ]
         attribute_menu = "Escolha o atributo: \n" + "\n".join(attribute_menu) + "\n> "
 
         available_attributes = list(range(len(device_attrs)))
@@ -79,15 +96,17 @@ class Cli(metaclass=Singleton):
         attribute_option = self.get_option(attribute_menu, available_attributes)
         attr_name = device_attrs[attribute_option]
 
-        available_values = device.get_available_attr_values(attr_name)
-        attr_value = self.get_option(f"Digite um valor: ", available_values)
+        attr_req = device.get_available_attr_req(attr_name)
+        attr_value = self.get_option(attr_req["message"], attr_req["available_values"])
 
         return attr_name, attr_value
 
     def __choose_routine(self):
         routines = self.house.routines
 
-        routines_menu = "".join([f"{idx}. {routine.name}" for idx, routine in enumerate(routines)])
+        routines_menu = "".join(
+            [f"{idx}. {routine.name}" for idx, routine in enumerate(routines)]
+        )
         routines_menu = "Escolha a rotina: \n" + "\n".join(routines_menu) + "\n> "
 
         available_routines = list(range(len(routines)))
@@ -100,29 +119,53 @@ class Cli(metaclass=Singleton):
     def __choose_report_type(self):
         report_types = [report_type for report_type in ReportType]
 
-        report_type_menu = [f"{idx}. {report_type.value}" for idx, report_type in enumerate(ReportType)]
-        report_type_menu = "Escolha o tipo de relatório: \n" + "\n".join(report_type_menu) + "\n> "
+        report_type_menu = [
+            f"{idx}. {report_type.value}" for idx, report_type in enumerate(ReportType)
+        ]
+        report_type_menu = (
+            "Escolha o tipo de relatório: \n" + "\n".join(report_type_menu) + "\n> "
+        )
 
         available_report_types = list(range(len(report_types)))
 
         report_types_option = self.get_option(report_type_menu, available_report_types)
         report_type = report_types[report_types_option]
 
-        return report_type
+        # la gambi
+        args = []
+        if report_type == ReportType.OUTLET_CONSUMPTION:
+            start = self.__get_date_input("inicio")
+            end = self.__get_date_input("fim")
+            args.append(start)
+            args.append(end)
+
+        return report_type, args
+
+    @staticmethod
+    def __get_date_input(msg):
+        while True:
+            date_str = input(f"Digite a data do {msg} do período (YYYY-MM-DD): ")
+            try:
+                user_date = datetime.strptime(date_str, "%Y-%m-%d")
+                return user_date
+            except ValueError:
+                print("Formato inválido. Use YYYY-MM-DD.")
 
     def choose_menu_option(self):
-        menu = ("\n\n=== SMART HOME HUB ===\n" 
-                "1. Listar dispositivos\n"
-                "2. Mostrar dispositivo\n"
-                "3. Executar comando em dispositivo\n"
-                "4. Alterar atributo de dispositivo\n"
-                "5. Executar rotina\n"
-                "6. Gerar relatorio\n"
-                "7. Salvar configuração\n"
-                "8. Adicionar dispositivo\n"
-                "9. Remover dispositivo\n"
-                "10. Sair\n"
-                "> ")
+        menu = (
+            "\n\n=== SMART HOME HUB ===\n"
+            "1. Listar dispositivos\n"
+            "2. Mostrar dispositivo\n"
+            "3. Executar comando em dispositivo\n"
+            "4. Alterar atributo de dispositivo\n"
+            "5. Executar rotina\n"
+            "6. Gerar relatorio\n"
+            "7. Salvar configuração\n"
+            "8. Adicionar dispositivo\n"
+            "9. Remover dispositivo\n"
+            "10. Sair\n"
+            "> "
+        )
 
         available_options = list(range(11))
         return self.get_option(menu, available_options)
@@ -169,8 +212,8 @@ class Cli(metaclass=Singleton):
         self.house.run_routine(routine)
 
     def generate_report(self):
-        report_type = self.__choose_report_type()
-        report = self.house.generate_report(report_type)
+        report_type, args = self.__choose_report_type()
+        report = self.house.generate_report(report_type, *args)
 
         if not report:
             raise NoAvailableInfoToReport(report_type.name)
@@ -179,7 +222,7 @@ class Cli(metaclass=Singleton):
         self.logger.log_report_to_csv(report_file_path, report)
         print(f"Relatório gerado com sucesso! Caminho: {report_file_path}")
         for item in report:
-            print(f"Device: {item['device_name']} - Evento: {item['event']}: Failure Percentage: {item['failure_percentage']}%")
+            print(item)
 
     def save_house_config(self):
         self.house.save_config()
@@ -187,8 +230,12 @@ class Cli(metaclass=Singleton):
 
     def add_device(self):
         device_classes = BaseDevice.__subclasses__()
-        device_class_menu = [f"{idx}. {_class.name_pt}" for idx, _class in enumerate(device_classes)]
-        device_class_menu = "Escolha o tipo de dispositivo: \n" + "\n".join(device_class_menu) + "\n> "
+        device_class_menu = [
+            f"{idx}. {_class.name_pt}" for idx, _class in enumerate(device_classes)
+        ]
+        device_class_menu = (
+            "Escolha o tipo de dispositivo: \n" + "\n".join(device_class_menu) + "\n> "
+        )
         available_devices = list(range(len(device_classes)))
 
         device_class_option = int(self.get_option(device_class_menu, available_devices))
@@ -204,13 +251,14 @@ class Cli(metaclass=Singleton):
         kwargs = device_class.get_command_kwargs("__init__")
         if kwargs:
             for kwarg_name, kwarg_req in kwargs.items():
-                kwargs[kwarg_name] = self.get_option(kwarg_req["message"], kwarg_req["available_values"])
+                kwargs[kwarg_name] = self.get_option(
+                    kwarg_req["message"], kwarg_req["available_values"]
+                )
             device = device_class(device_name, **kwargs)
         else:
             device = device_class(device_name)
 
         self.house.add_device(device)
-
 
     def remove_device(self):
         if not self.house.devices:
