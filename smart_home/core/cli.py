@@ -105,9 +105,9 @@ class Cli(metaclass=Singleton):
         routines = self.house.routines
 
         routines_menu = "".join(
-            [f"{idx}. {routine.name}" for idx, routine in enumerate(routines)]
+            [f"{idx}. {routine.name}\n" for idx, routine in enumerate(routines)]
         )
-        routines_menu = "Escolha a rotina: \n" + "\n".join(routines_menu) + "\n> "
+        routines_menu = "Escolha a rotina: \n" + "".join(routines_menu) + "\n> "
 
         available_routines = list(range(len(routines)))
 

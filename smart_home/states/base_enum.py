@@ -22,6 +22,8 @@ class BaseEnum(Enum):
             raise ValueError(f"'{value}' has no corresponding member in {cls.__name__}.")
         return value
 
+    def __str__(self):
+        return self.name.lower()
 
 
 class EnumDescriptor:

@@ -9,7 +9,7 @@ class Command:
 
     def to_dict(self):
         return {
-            "device_name": self.device.to_dict(),
+            "device_name": self.device.name,
             "command": self.name,
             "arguments": self.kwargs,
         }

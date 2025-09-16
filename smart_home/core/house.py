@@ -12,7 +12,7 @@ from smart_home.core import (
     EventResult,
 )
 from smart_home.core.base import Subject, Singleton
-from smart_home.devices import BaseDevice, Outlet, Light
+from smart_home.devices import BaseDevice, Outlet, Light, Door, Camera, AC
 
 
 class ReportType(Enum):
@@ -35,6 +35,41 @@ class House(Subject, metaclass=Singleton):
         self.__devices: List[BaseDevice] = []
         self.__routines: List[Routine] = []
         self.subscribe(ConsoleObserver())
+        self.__start_mock_routines()
+
+    def __start_mock_routines(self):
+        door = Door("Porta da frente")
+        light_bedroom = Light("Luz quarto")
+        light_living_room = Light("Luz sala")
+        camera = Camera("Camera sala")
+        ac = AC("Ar condicionado quarto", 1200)
+
+        self.add_device(door)
+        self.add_device(light_bedroom)
+        self.add_device(light_living_room)
+        self.add_device(camera)
+        self.add_device(ac)
+
+        wake_up_commands = [
+            Command(light_bedroom, "turn_on"),
+            Command(door, "lock"),
+            Command(ac, "turn_off"),
+            Command(camera, "turn_on"),
+            Command(camera, "set_inactive"),
+        ]
+        sleep_commands = [
+            Command(door, "close"),
+            Command(door, "lock"),
+            Command(light_bedroom, "turn_off"),
+            Command(light_living_room, "turn_off"),
+            Command(ac, "turn_on"),
+            Command(camera, "turn_on"),
+            Command(camera, "set_away"),
+        ]
+        self.__routines = [
+            Routine("acordar", wake_up_commands),
+            Routine("dormir", sleep_commands)
+        ]
 
     @property
     def devices(self):
