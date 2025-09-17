@@ -30,7 +30,7 @@ def handle_exception(cls, func):
         except NoRegisteredDevice as e:
             print("Não há nenhum dispositivo cadastrado.")
         except NoRegisteredRoutine as e:
-            print("Não há nenhuma rotina cadastrado.")
+            print("Não há nenhuma rotina cadastrada.")
         except NoAvailableInfoToReport as e:
             print(
                 "Não há nenhuma informação disponível para gerar este tipo de relatório."

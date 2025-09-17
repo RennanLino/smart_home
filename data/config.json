@@ -1,0 +1,133 @@
+{
+    "hub": {
+        "name": "House",
+        "version": "1.0"
+    },
+    "devices": [
+        {
+            "name": "Porta da frente",
+            "type": "Door",
+            "state": "open",
+            "atributes": {}
+        },
+        {
+            "name": "Luz quarto",
+            "type": "Light",
+            "state": "on",
+            "atributes": {
+                "brightness": 100,
+                "color": "neutral",
+                "total_time": 0,
+                "turned_on_at": "2025-09-16T21:30:47.896090"
+            }
+        },
+        {
+            "name": "Luz sala",
+            "type": "Light",
+            "state": "on",
+            "atributes": {
+                "brightness": 100,
+                "color": "neutral",
+                "total_time": 0,
+                "turned_on_at": "2025-09-16T21:30:53.182634"
+            }
+        },
+        {
+            "name": "Camera sala",
+            "type": "Camera",
+            "state": "at_home",
+            "atributes": {
+                "total_time": 674.194052,
+                "turned_on_at": "2025-09-16T21:30:59.190264"
+            }
+        },
+        {
+            "name": "Ar condicionado quarto",
+            "type": "AC",
+            "state": "on",
+            "atributes": {
+                "power_w": 1200,
+                "temperature": 24,
+                "mode": "cooling",
+                "total_time": 619.857429,
+                "turned_on_at": "2025-09-16T21:31:12.774438"
+            }
+        },
+        {
+            "name": "Computador quarto",
+            "type": "Outlet",
+            "state": "on",
+            "atributes": {
+                "power_w": 200,
+                "total_time": 749.292929,
+                "turned_on_at": "2025-09-16T21:30:40.415573"
+            }
+        }
+    ],
+    "routines": {
+        "acordar": [
+            {
+                "device_name": "Luz quarto",
+                "command": "turn_on",
+                "arguments": {}
+            },
+            {
+                "device_name": "Porta da frente",
+                "command": "lock",
+                "arguments": {}
+            },
+            {
+                "device_name": "Ar condicionado quarto",
+                "command": "turn_off",
+                "arguments": {}
+            },
+            {
+                "device_name": "Camera sala",
+                "command": "turn_on",
+                "arguments": {}
+            },
+            {
+                "device_name": "Camera sala",
+                "command": "set_inactive",
+                "arguments": {}
+            }
+        ],
+        "dormir": [
+            {
+                "device_name": "Porta da frente",
+                "command": "close",
+                "arguments": {}
+            },
+            {
+                "device_name": "Porta da frente",
+                "command": "lock",
+                "arguments": {}
+            },
+            {
+                "device_name": "Luz quarto",
+                "command": "turn_off",
+                "arguments": {}
+            },
+            {
+                "device_name": "Luz sala",
+                "command": "turn_off",
+                "arguments": {}
+            },
+            {
+                "device_name": "Ar condicionado quarto",
+                "command": "turn_on",
+                "arguments": {}
+            },
+            {
+                "device_name": "Camera sala",
+                "command": "turn_on",
+                "arguments": {}
+            },
+            {
+                "device_name": "Camera sala",
+                "command": "set_away",
+                "arguments": {}
+            }
+        ]
+    }
+}

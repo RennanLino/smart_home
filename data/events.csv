@@ -1,0 +1,12 @@
+timestamp,device_type,device_name,event,source_state,destiny_state,success
+2025-09-16T21:01:55.472812,Outlet,Computador quarto,turn_on,off,on,True
+2025-09-16T21:02:20.184757,Door,Porta da frente,close,open,unlocked,True
+2025-09-16T21:02:30.655299,Door,Porta da frente,lock,unlocked,locked,True
+2025-09-16T21:10:42.456525,Outlet,Computador quarto,turn_off,on,off,True
+2025-09-16T21:12:03.752695,Light,Luz quarto,turn_on,off,on,True
+2025-09-16T21:29:05.071205,Outlet,Tomada quarto,turn_on,off,on,True
+2025-09-16T21:30:40.415635,Outlet,Computador quarto,turn_on,off,on,True
+2025-09-16T21:30:47.896131,Light,Luz quarto,turn_on,off,on,True
+2025-09-16T21:30:53.182666,Light,Luz sala,turn_on,off,on,True
+2025-09-16T21:30:59.190301,Camera,Camera sala,turn_on,off,at_home,True
+2025-09-16T21:31:12.774470,AC,Ar condicionado quarto,set_cooling,off,on,True

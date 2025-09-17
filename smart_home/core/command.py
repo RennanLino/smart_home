@@ -21,4 +21,4 @@ class Command:
             device for device in devices if device.name == command_dict["device_name"]
         )
         kwargs = command_dict["arguments"]
-        return Command(command_name, device, **kwargs)
+        return Command(device, command_name, **kwargs)

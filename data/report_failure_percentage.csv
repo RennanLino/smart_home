@@ -1,0 +1,10 @@
+device_name,event,times_used,times_failed,failure_percentage
+Ar condicionado quarto,set_cooling,1,0,0
+Camera sala,turn_on,1,0,0
+Computador quarto,turn_on,2,0,0
+Computador quarto,turn_off,1,0,0
+Luz quarto,turn_on,2,0,0
+Luz sala,turn_on,1,0,0
+Porta da frente,close,1,0,0
+Porta da frente,lock,1,0,0
+Tomada quarto,turn_on,1,0,0

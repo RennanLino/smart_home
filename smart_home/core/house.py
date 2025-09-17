@@ -33,9 +33,9 @@ class House(Subject, metaclass=Singleton):
         self.name = "House"
         self.version = "1.0"
         self.__devices: List[BaseDevice] = []
-        self.__routines: List[Routine] = []
         self.subscribe(ConsoleObserver())
-        self.__start_mock_routines()
+        self.__routines: List[Routine] = []
+        # self.__start_mock_routines()
 
     def __start_mock_routines(self):
         door = Door("Porta da frente")
@@ -376,5 +376,7 @@ class House(Subject, metaclass=Singleton):
                 Routine.from_dict(routine_name, command_dicts, self.__devices)
                 for routine_name, command_dicts in house_dict["routines"].items()
             ]
+        except AttributeError as e:
+            raise ConfigBadFormat(self.__config_path)
         except KeyError as e:
             raise ConfigBadFormat(self.__config_path)

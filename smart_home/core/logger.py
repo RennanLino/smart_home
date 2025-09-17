@@ -11,16 +11,6 @@ transitions_logger = logging.getLogger("transitions.core")
 transitions_logger.setLevel(logging.CRITICAL)
 
 
-class LogLevel(Enum):
-    INFO = auto()
-    DEBUG = auto()
-    WARNING = auto()
-    ERROR = auto()
-
-    def __str__(self):
-        return self.name.lower()
-
-
 class SmartHouseLogger(logging.Logger, metaclass=Singleton):
     _instance = None
 

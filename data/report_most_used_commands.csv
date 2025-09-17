@@ -1,0 +1,10 @@
+device_name,event,times_used
+Computador quarto,turn_on,2
+Luz quarto,turn_on,2
+Ar condicionado quarto,set_cooling,1
+Camera sala,turn_on,1
+Computador quarto,turn_off,1
+Luz sala,turn_on,1
+Porta da frente,close,1
+Porta da frente,lock,1
+Tomada quarto,turn_on,1

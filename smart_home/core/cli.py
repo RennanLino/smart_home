@@ -30,7 +30,6 @@ class Cli(metaclass=Singleton):
     @staticmethod
     def get_option(message: str, available_options: list[int] = None):
         option = -1
-        # TODO: check what happens when available_options is None
         while option not in available_options:
             option = input(message)
 
