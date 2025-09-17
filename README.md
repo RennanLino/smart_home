@@ -2,6 +2,8 @@
 
 Um sistema de automação residencial modular, extensível e orientado a eventos, desenvolvido em Python.
 
+Video de apresentação: https://youtu.be/OfO3fqUTDq0
+
 ## Funcionalidades
 
 - **Gerenciamento de dispositivos**: Adicione, remova, visualize e altere atributos de dispositivos como Luzes, Portas, Tomadas, Câmeras, Ar Condicionado e Irrigadores.
